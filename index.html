@@ -224,8 +224,12 @@
             font-weight: bold;
         }
 
-        .cell-correct {
+        .cell-correct-power {
             background: #c6f6d5;
+        }
+
+        .cell-correct-confidence {
+            background: #bfdbfe;
         }
 
         .cell-error-tipo1 {
@@ -380,7 +384,7 @@
                         <canvas id="chart"></canvas>
                     </div>
 
-                    <div class="legend-container">
+                    <div class="legend-container" style="grid-template-columns: repeat(2, 1fr); gap: 10px;">
                         <div class="legend-item" style="background: #fed7d7;">
                             <div class="legend-color" style="background: #ef4444;"></div>
                             <span><strong>Error Tipo I (α) = <span id="alphaPercent">5.00</span>%</strong></span>
@@ -388,6 +392,10 @@
                         <div class="legend-item" style="background: #feebc8;">
                             <div class="legend-color" style="background: #f97316;"></div>
                             <span><strong>Error Tipo II (β) = <span id="betaPercent">0.00</span>%</strong></span>
+                        </div>
+                        <div class="legend-item" style="background: #bfdbfe;">
+                            <div class="legend-color" style="background: #3b82f6;"></div>
+                            <span><strong>Confianza (1-α) = <span id="confidencePercent">95.00</span>%</strong></span>
                         </div>
                         <div class="legend-item" style="background: #c6f6d5;">
                             <div class="legend-color" style="background: #10b981;"></div>
@@ -415,9 +423,9 @@
                             <tbody>
                                 <tr>
                                     <th>No Rechazar H₀<br><span style="font-weight: normal; font-size: 0.85em;">(Aceptar H₀)</span></th>
-                                    <td class="cell-correct">
-                                        <div style="font-weight: bold; color: #22543d;">✓ Decisión Correcta</div>
-                                        <div class="cell-value" style="color: #22543d;"><span id="confidenceTable">95.00</span>%</div>
+                                    <td class="cell-correct-confidence">
+                                        <div style="font-weight: bold; color: #1e40af;">✓ Decisión Correcta</div>
+                                        <div class="cell-value" style="color: #1e40af;"><span id="confidenceTable">95.00</span>%</div>
                                         <div class="cell-label">Confianza (1-α)</div>
                                     </td>
                                     <td class="cell-error-tipo2">
@@ -433,7 +441,7 @@
                                         <div class="cell-value" style="color: #742a2a;"><span id="alphaTable">5.00</span>%</div>
                                         <div class="cell-label">α (Falso Positivo)</div>
                                     </td>
-                                    <td class="cell-correct">
+                                    <td class="cell-correct-power">
                                         <div style="font-weight: bold; color: #22543d;">✓ Decisión Correcta</div>
                                         <div class="cell-value" style="color: #22543d;"><span id="powerTable">100.00</span>%</div>
                                         <div class="cell-label">Potencia (1-β)</div>
@@ -561,9 +569,10 @@
 
             currentStats = { alpha, beta, power, confidence, criticalValue, mu0, mu1, seM };
 
-            // Actualizar resultados
+            // Actualizar resultados en leyenda
             document.getElementById('alphaPercent').textContent = (alpha * 100).toFixed(2);
             document.getElementById('betaPercent').textContent = (beta * 100).toFixed(2);
+            document.getElementById('confidencePercent').textContent = (confidence * 100).toFixed(2);
             document.getElementById('powerPercent').textContent = (power * 100).toFixed(2);
 
             // Actualizar tabla
@@ -613,18 +622,18 @@
                 return canvas.height - padding - (y / maxY) * chartHeight;
             }
 
-            // Dibujar áreas sombreadas
+            // Dibujar áreas sombreadas (orden importante: de atrás hacia adelante)
             const step = (rangeEnd - rangeStart) / 400;
 
-            // Área Error Tipo I (roja) - bajo H0 en región de rechazo
-            ctx.fillStyle = 'rgba(239, 68, 68, 0.6)';
+            // 1. Área Potencia (verde) - FONDO - bajo H1 en región de rechazo
+            ctx.fillStyle = 'rgba(16, 185, 129, 0.4)';
             ctx.beginPath();
             if (testType === 'two-tailed') {
                 const criticalLower = 2 * mu0 - criticalValue;
                 // Cola derecha
                 ctx.moveTo(mapX(criticalValue), mapY(0));
                 for (let x = criticalValue; x <= rangeEnd; x += step) {
-                    ctx.lineTo(mapX(x), mapY(normalPDF(x, mu0, seM)));
+                    ctx.lineTo(mapX(x), mapY(normalPDF(x, mu1, seM)));
                 }
                 ctx.lineTo(mapX(rangeEnd), mapY(0));
                 ctx.closePath();
@@ -634,31 +643,57 @@
                 ctx.beginPath();
                 ctx.moveTo(mapX(rangeStart), mapY(0));
                 for (let x = rangeStart; x <= criticalLower; x += step) {
-                    ctx.lineTo(mapX(x), mapY(normalPDF(x, mu0, seM)));
+                    ctx.lineTo(mapX(x), mapY(normalPDF(x, mu1, seM)));
                 }
                 ctx.lineTo(mapX(criticalLower), mapY(0));
-                ctx.closePath();
-                ctx.fill();
             } else {
                 if (mu1 > mu0) {
                     ctx.moveTo(mapX(criticalValue), mapY(0));
                     for (let x = criticalValue; x <= rangeEnd; x += step) {
-                        ctx.lineTo(mapX(x), mapY(normalPDF(x, mu0, seM)));
+                        ctx.lineTo(mapX(x), mapY(normalPDF(x, mu1, seM)));
                     }
                     ctx.lineTo(mapX(rangeEnd), mapY(0));
                 } else {
                     ctx.moveTo(mapX(rangeStart), mapY(0));
                     for (let x = rangeStart; x <= criticalValue; x += step) {
-                        ctx.lineTo(mapX(x), mapY(normalPDF(x, mu0, seM)));
+                        ctx.lineTo(mapX(x), mapY(normalPDF(x, mu1, seM)));
                     }
                     ctx.lineTo(mapX(criticalValue), mapY(0));
                 }
-                ctx.closePath();
-                ctx.fill();
             }
+            ctx.closePath();
+            ctx.fill();
 
-            // Área Error Tipo II (naranja) - bajo H1 en región de no rechazo
-            ctx.fillStyle = 'rgba(249, 115, 22, 0.6)';
+            // 2. Área de Confianza (1-α) - azul claro - bajo H0 en región de no rechazo
+            ctx.fillStyle = 'rgba(59, 130, 246, 0.25)';
+            ctx.beginPath();
+            if (testType === 'two-tailed') {
+                const criticalLower = 2 * mu0 - criticalValue;
+                ctx.moveTo(mapX(criticalLower), mapY(0));
+                for (let x = criticalLower; x <= criticalValue; x += step) {
+                    ctx.lineTo(mapX(x), mapY(normalPDF(x, mu0, seM)));
+                }
+                ctx.lineTo(mapX(criticalValue), mapY(0));
+            } else {
+                if (mu1 > mu0) {
+                    ctx.moveTo(mapX(rangeStart), mapY(0));
+                    for (let x = rangeStart; x <= criticalValue; x += step) {
+                        ctx.lineTo(mapX(x), mapY(normalPDF(x, mu0, seM)));
+                    }
+                    ctx.lineTo(mapX(criticalValue), mapY(0));
+                } else {
+                    ctx.moveTo(mapX(criticalValue), mapY(0));
+                    for (let x = criticalValue; x <= rangeEnd; x += step) {
+                        ctx.lineTo(mapX(x), mapY(normalPDF(x, mu0, seM)));
+                    }
+                    ctx.lineTo(mapX(rangeEnd), mapY(0));
+                }
+            }
+            ctx.closePath();
+            ctx.fill();
+
+            // 3. Área Error Tipo II (naranja) - bajo H1 en región de no rechazo
+            ctx.fillStyle = 'rgba(249, 115, 22, 0.7)';
             ctx.beginPath();
             if (testType === 'two-tailed') {
                 const criticalLower = 2 * mu0 - criticalValue;
@@ -685,15 +720,15 @@
             ctx.closePath();
             ctx.fill();
 
-            // Área Potencia (verde) - bajo H1 en región de rechazo
-            ctx.fillStyle = 'rgba(16, 185, 129, 0.5)';
+            // 4. Área Error Tipo I (roja) - ADELANTE - bajo H0 en región de rechazo
+            ctx.fillStyle = 'rgba(239, 68, 68, 0.65)';
             ctx.beginPath();
             if (testType === 'two-tailed') {
                 const criticalLower = 2 * mu0 - criticalValue;
                 // Cola derecha
                 ctx.moveTo(mapX(criticalValue), mapY(0));
                 for (let x = criticalValue; x <= rangeEnd; x += step) {
-                    ctx.lineTo(mapX(x), mapY(normalPDF(x, mu1, seM)));
+                    ctx.lineTo(mapX(x), mapY(normalPDF(x, mu0, seM)));
                 }
                 ctx.lineTo(mapX(rangeEnd), mapY(0));
                 ctx.closePath();
@@ -703,26 +738,28 @@
                 ctx.beginPath();
                 ctx.moveTo(mapX(rangeStart), mapY(0));
                 for (let x = rangeStart; x <= criticalLower; x += step) {
-                    ctx.lineTo(mapX(x), mapY(normalPDF(x, mu1, seM)));
+                    ctx.lineTo(mapX(x), mapY(normalPDF(x, mu0, seM)));
                 }
                 ctx.lineTo(mapX(criticalLower), mapY(0));
+                ctx.closePath();
+                ctx.fill();
             } else {
                 if (mu1 > mu0) {
                     ctx.moveTo(mapX(criticalValue), mapY(0));
                     for (let x = criticalValue; x <= rangeEnd; x += step) {
-                        ctx.lineTo(mapX(x), mapY(normalPDF(x, mu1, seM)));
+                        ctx.lineTo(mapX(x), mapY(normalPDF(x, mu0, seM)));
                     }
                     ctx.lineTo(mapX(rangeEnd), mapY(0));
                 } else {
                     ctx.moveTo(mapX(rangeStart), mapY(0));
                     for (let x = rangeStart; x <= criticalValue; x += step) {
-                        ctx.lineTo(mapX(x), mapY(normalPDF(x, mu1, seM)));
+                        ctx.lineTo(mapX(x), mapY(normalPDF(x, mu0, seM)));
                     }
                     ctx.lineTo(mapX(criticalValue), mapY(0));
                 }
+                ctx.closePath();
+                ctx.fill();
             }
-            ctx.closePath();
-            ctx.fill();
 
             // Dibujar curvas
             // Curva H0 (azul)
