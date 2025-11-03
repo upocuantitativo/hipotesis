@@ -306,21 +306,9 @@
                 <div class="card">
                     <h2><span class="badge">1</span> Hipótesis</h2>
 
-                    <div class="control-group">
-                        <label>Tipo de Contraste</label>
-                        <div class="button-group">
-                            <button id="btnTwoTailed" class="active" onclick="setTestType('two-tailed')">
-                                Bilateral (Dos Colas)
-                            </button>
-                            <button id="btnOneTailed" onclick="setTestType('one-tailed')">
-                                Unilateral (Una Cola)
-                            </button>
-                        </div>
-                    </div>
-
                     <div class="hypothesis-box" id="hypothesisBox">
                         <div><strong>H₀:</strong> μ = 30.0</div>
-                        <div><strong>H₁:</strong> μ ≠ 30.0</div>
+                        <div><strong>H₁:</strong> μ = 40.0</div>
                     </div>
 
                     <div class="control-group">
@@ -355,8 +343,8 @@
                     <div class="control-group">
                         <label>Tamaño Muestral (n)</label>
                         <div class="slider-container">
-                            <span class="value-display" id="sampleSizeValue">8</span>
-                            <input type="range" id="sampleSize" min="5" max="200" step="1" value="8" oninput="updateParams()">
+                            <span class="value-display" id="sampleSizeValue">25</span>
+                            <input type="range" id="sampleSize" min="5" max="200" step="1" value="25" oninput="updateParams()">
                         </div>
                         <p class="helper-text">Nº observaciones</p>
                     </div>
@@ -364,8 +352,8 @@
                     <div class="control-group">
                         <label>Desviación Estándar (σ)</label>
                         <div class="slider-container">
-                            <span class="value-display" id="sigmaValue">10.0</span>
-                            <input type="range" id="sigma" min="1" max="20" step="0.5" value="10" oninput="updateParams()">
+                            <span class="value-display" id="sigmaValue">12.0</span>
+                            <input type="range" id="sigma" min="1" max="20" step="0.5" value="12" oninput="updateParams()">
                         </div>
                         <p class="helper-text">σ poblacional</p>
                     </div>
@@ -464,7 +452,6 @@
     </div>
 
     <script>
-        let testType = 'two-tailed';
         let currentStats = {};
 
         // Función de densidad normal
@@ -512,13 +499,6 @@
             return x;
         }
 
-        function setTestType(type) {
-            testType = type;
-            document.getElementById('btnTwoTailed').classList.toggle('active', type === 'two-tailed');
-            document.getElementById('btnOneTailed').classList.toggle('active', type === 'one-tailed');
-            updateParams();
-        }
-
         function updateParams() {
             const mu0 = parseFloat(document.getElementById('mu0').value);
             const mu1 = parseFloat(document.getElementById('mu1').value);
@@ -536,33 +516,17 @@
             const seM = sigma / Math.sqrt(n);
             document.getElementById('seValue').textContent = seM.toFixed(4);
 
-            // Actualizar hipótesis
-            const h1Symbol = testType === 'two-tailed' ? '≠' : (mu1 > mu0 ? '>' : '<');
-            const h1Value = testType === 'two-tailed' ? mu0.toFixed(1) : mu1.toFixed(1);
+            // Actualizar hipótesis - siempre bilateral con μ₁ específica
             document.getElementById('hypothesisBox').innerHTML = `
                 <div><strong>H₀:</strong> μ = ${mu0.toFixed(1)}</div>
-                <div><strong>H₁:</strong> μ ${h1Symbol} ${h1Value}</div>
+                <div><strong>H₁:</strong> μ = ${mu1.toFixed(1)}</div>
             `;
 
-            // Calcular estadísticas
-            let criticalValue;
-            if (testType === 'two-tailed') {
-                criticalValue = inverseNormalCDF(1 - alpha / 2) * seM + mu0;
-            } else {
-                criticalValue = inverseNormalCDF(1 - alpha) * seM + mu0;
-            }
+            // Calcular estadísticas (solo bilateral, solo cola derecha)
+            const criticalValue = inverseNormalCDF(1 - alpha / 2) * seM + mu0;
 
-            let beta;
-            if (testType === 'two-tailed') {
-                const criticalLower = 2 * mu0 - criticalValue;
-                beta = normalCDF(criticalValue, mu1, seM) - normalCDF(criticalLower, mu1, seM);
-            } else {
-                if (mu1 > mu0) {
-                    beta = normalCDF(criticalValue, mu1, seM);
-                } else {
-                    beta = 1 - normalCDF(criticalValue, mu1, seM);
-                }
-            }
+            // Beta solo considerando cola derecha (sin cola izquierda)
+            const beta = normalCDF(criticalValue, mu1, seM);
 
             const power = 1 - beta;
             const confidence = 1 - alpha;
@@ -622,144 +586,53 @@
                 return canvas.height - padding - (y / maxY) * chartHeight;
             }
 
-            // Dibujar áreas sombreadas (orden importante: de atrás hacia adelante)
+            // Dibujar áreas sombreadas (orden: de atrás hacia adelante)
+            // Solo cola derecha (μ₁ > μ₀)
             const step = (rangeEnd - rangeStart) / 400;
 
-            // 1. Área Potencia (verde) - FONDO - bajo H1 en región de rechazo
+            // 1. Área Potencia (verde) - FONDO - bajo H1 en región de rechazo (cola derecha)
             ctx.fillStyle = 'rgba(16, 185, 129, 0.4)';
             ctx.beginPath();
-            if (testType === 'two-tailed') {
-                const criticalLower = 2 * mu0 - criticalValue;
-                // Cola derecha
-                ctx.moveTo(mapX(criticalValue), mapY(0));
-                for (let x = criticalValue; x <= rangeEnd; x += step) {
-                    ctx.lineTo(mapX(x), mapY(normalPDF(x, mu1, seM)));
-                }
-                ctx.lineTo(mapX(rangeEnd), mapY(0));
-                ctx.closePath();
-                ctx.fill();
-
-                // Cola izquierda
-                ctx.beginPath();
-                ctx.moveTo(mapX(rangeStart), mapY(0));
-                for (let x = rangeStart; x <= criticalLower; x += step) {
-                    ctx.lineTo(mapX(x), mapY(normalPDF(x, mu1, seM)));
-                }
-                ctx.lineTo(mapX(criticalLower), mapY(0));
-            } else {
-                if (mu1 > mu0) {
-                    ctx.moveTo(mapX(criticalValue), mapY(0));
-                    for (let x = criticalValue; x <= rangeEnd; x += step) {
-                        ctx.lineTo(mapX(x), mapY(normalPDF(x, mu1, seM)));
-                    }
-                    ctx.lineTo(mapX(rangeEnd), mapY(0));
-                } else {
-                    ctx.moveTo(mapX(rangeStart), mapY(0));
-                    for (let x = rangeStart; x <= criticalValue; x += step) {
-                        ctx.lineTo(mapX(x), mapY(normalPDF(x, mu1, seM)));
-                    }
-                    ctx.lineTo(mapX(criticalValue), mapY(0));
-                }
+            ctx.moveTo(mapX(criticalValue), mapY(0));
+            for (let x = criticalValue; x <= rangeEnd; x += step) {
+                ctx.lineTo(mapX(x), mapY(normalPDF(x, mu1, seM)));
             }
+            ctx.lineTo(mapX(rangeEnd), mapY(0));
             ctx.closePath();
             ctx.fill();
 
             // 2. Área de Confianza (1-α) - azul claro - bajo H0 en región de no rechazo
             ctx.fillStyle = 'rgba(59, 130, 246, 0.25)';
             ctx.beginPath();
-            if (testType === 'two-tailed') {
-                const criticalLower = 2 * mu0 - criticalValue;
-                ctx.moveTo(mapX(criticalLower), mapY(0));
-                for (let x = criticalLower; x <= criticalValue; x += step) {
-                    ctx.lineTo(mapX(x), mapY(normalPDF(x, mu0, seM)));
-                }
-                ctx.lineTo(mapX(criticalValue), mapY(0));
-            } else {
-                if (mu1 > mu0) {
-                    ctx.moveTo(mapX(rangeStart), mapY(0));
-                    for (let x = rangeStart; x <= criticalValue; x += step) {
-                        ctx.lineTo(mapX(x), mapY(normalPDF(x, mu0, seM)));
-                    }
-                    ctx.lineTo(mapX(criticalValue), mapY(0));
-                } else {
-                    ctx.moveTo(mapX(criticalValue), mapY(0));
-                    for (let x = criticalValue; x <= rangeEnd; x += step) {
-                        ctx.lineTo(mapX(x), mapY(normalPDF(x, mu0, seM)));
-                    }
-                    ctx.lineTo(mapX(rangeEnd), mapY(0));
-                }
+            ctx.moveTo(mapX(rangeStart), mapY(0));
+            for (let x = rangeStart; x <= criticalValue; x += step) {
+                ctx.lineTo(mapX(x), mapY(normalPDF(x, mu0, seM)));
             }
+            ctx.lineTo(mapX(criticalValue), mapY(0));
             ctx.closePath();
             ctx.fill();
 
             // 3. Área Error Tipo II (naranja) - bajo H1 en región de no rechazo
             ctx.fillStyle = 'rgba(249, 115, 22, 0.7)';
             ctx.beginPath();
-            if (testType === 'two-tailed') {
-                const criticalLower = 2 * mu0 - criticalValue;
-                ctx.moveTo(mapX(criticalLower), mapY(0));
-                for (let x = criticalLower; x <= criticalValue; x += step) {
-                    ctx.lineTo(mapX(x), mapY(normalPDF(x, mu1, seM)));
-                }
-                ctx.lineTo(mapX(criticalValue), mapY(0));
-            } else {
-                if (mu1 > mu0) {
-                    ctx.moveTo(mapX(rangeStart), mapY(0));
-                    for (let x = rangeStart; x <= criticalValue; x += step) {
-                        ctx.lineTo(mapX(x), mapY(normalPDF(x, mu1, seM)));
-                    }
-                    ctx.lineTo(mapX(criticalValue), mapY(0));
-                } else {
-                    ctx.moveTo(mapX(criticalValue), mapY(0));
-                    for (let x = criticalValue; x <= rangeEnd; x += step) {
-                        ctx.lineTo(mapX(x), mapY(normalPDF(x, mu1, seM)));
-                    }
-                    ctx.lineTo(mapX(rangeEnd), mapY(0));
-                }
+            ctx.moveTo(mapX(rangeStart), mapY(0));
+            for (let x = rangeStart; x <= criticalValue; x += step) {
+                ctx.lineTo(mapX(x), mapY(normalPDF(x, mu1, seM)));
             }
+            ctx.lineTo(mapX(criticalValue), mapY(0));
             ctx.closePath();
             ctx.fill();
 
-            // 4. Área Error Tipo I (roja) - ADELANTE - bajo H0 en región de rechazo
+            // 4. Área Error Tipo I (roja) - ADELANTE - bajo H0 en región de rechazo (solo cola derecha)
             ctx.fillStyle = 'rgba(239, 68, 68, 0.65)';
             ctx.beginPath();
-            if (testType === 'two-tailed') {
-                const criticalLower = 2 * mu0 - criticalValue;
-                // Cola derecha
-                ctx.moveTo(mapX(criticalValue), mapY(0));
-                for (let x = criticalValue; x <= rangeEnd; x += step) {
-                    ctx.lineTo(mapX(x), mapY(normalPDF(x, mu0, seM)));
-                }
-                ctx.lineTo(mapX(rangeEnd), mapY(0));
-                ctx.closePath();
-                ctx.fill();
-
-                // Cola izquierda
-                ctx.beginPath();
-                ctx.moveTo(mapX(rangeStart), mapY(0));
-                for (let x = rangeStart; x <= criticalLower; x += step) {
-                    ctx.lineTo(mapX(x), mapY(normalPDF(x, mu0, seM)));
-                }
-                ctx.lineTo(mapX(criticalLower), mapY(0));
-                ctx.closePath();
-                ctx.fill();
-            } else {
-                if (mu1 > mu0) {
-                    ctx.moveTo(mapX(criticalValue), mapY(0));
-                    for (let x = criticalValue; x <= rangeEnd; x += step) {
-                        ctx.lineTo(mapX(x), mapY(normalPDF(x, mu0, seM)));
-                    }
-                    ctx.lineTo(mapX(rangeEnd), mapY(0));
-                } else {
-                    ctx.moveTo(mapX(rangeStart), mapY(0));
-                    for (let x = rangeStart; x <= criticalValue; x += step) {
-                        ctx.lineTo(mapX(x), mapY(normalPDF(x, mu0, seM)));
-                    }
-                    ctx.lineTo(mapX(criticalValue), mapY(0));
-                }
-                ctx.closePath();
-                ctx.fill();
+            ctx.moveTo(mapX(criticalValue), mapY(0));
+            for (let x = criticalValue; x <= rangeEnd; x += step) {
+                ctx.lineTo(mapX(x), mapY(normalPDF(x, mu0, seM)));
             }
+            ctx.lineTo(mapX(rangeEnd), mapY(0));
+            ctx.closePath();
+            ctx.fill();
 
             // Dibujar curvas
             // Curva H0 (azul)
@@ -807,21 +680,13 @@
             ctx.lineTo(mapX(mu1), mapY(maxY));
             ctx.stroke();
 
-            // Valor crítico
+            // Valor crítico (solo derecha)
             ctx.strokeStyle = '#dc2626';
             ctx.lineWidth = 3;
             ctx.beginPath();
             ctx.moveTo(mapX(criticalValue), mapY(0));
             ctx.lineTo(mapX(criticalValue), mapY(maxY));
             ctx.stroke();
-
-            if (testType === 'two-tailed') {
-                const criticalLower = 2 * mu0 - criticalValue;
-                ctx.beginPath();
-                ctx.moveTo(mapX(criticalLower), mapY(0));
-                ctx.lineTo(mapX(criticalLower), mapY(maxY));
-                ctx.stroke();
-            }
 
             ctx.setLineDash([]);
 
