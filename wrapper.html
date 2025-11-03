@@ -21,19 +21,23 @@
 
         header {
             background: rgba(255, 255, 255, 0.95);
-            padding: 1.5rem 2rem;
+            padding: 0.75rem 2rem;
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            display: flex;
+            align-items: baseline;
+            gap: 0.75rem;
         }
 
         header h1 {
             color: #667eea;
-            font-size: 1.8rem;
-            margin-bottom: 0.5rem;
+            font-size: 1.4rem;
+            margin: 0;
         }
 
         header p {
             color: #555;
-            font-size: 1rem;
+            font-size: 0.85rem;
+            margin: 0;
         }
 
         .container {
@@ -82,11 +86,11 @@
         }
 
         .controls {
-            padding: 1rem 2rem;
+            padding: 0.75rem 2rem;
             background: #f8f9fa;
             border-bottom: 1px solid #e0e0e0;
             display: flex;
-            justify-content: space-between;
+            justify-content: flex-end;
             align-items: center;
         }
 
@@ -94,10 +98,10 @@
             background: #667eea;
             color: white;
             border: none;
-            padding: 0.5rem 1.5rem;
+            padding: 0.4rem 1.2rem;
             border-radius: 6px;
             cursor: pointer;
-            font-size: 0.9rem;
+            font-size: 0.85rem;
             font-weight: 600;
             transition: background 0.3s;
         }
@@ -106,24 +110,19 @@
             background: #5568d3;
         }
 
-        .controls .info {
-            font-size: 0.85rem;
-            color: #666;
-        }
-
         @media (max-width: 768px) {
+            header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 0.25rem;
+            }
+
             header h1 {
-                font-size: 1.4rem;
+                font-size: 1.1rem;
             }
 
             header p {
-                font-size: 0.9rem;
-            }
-
-            .controls {
-                flex-direction: column;
-                gap: 1rem;
-                align-items: flex-start;
+                font-size: 0.75rem;
             }
 
             iframe {
@@ -135,15 +134,12 @@
 <body>
     <header>
         <h1>📊 Contraste de Hipótesis para la Media Poblacional</h1>
-        <p>Herramienta interactiva para visualizar y comprender los errores estadísticos (Tipo I, Tipo II) y la potencia del contraste</p>
+        <p>- Herramienta interactiva para visualizar y comprender los errores estadísticos (Tipo I, Tipo II) y la potencia del contraste</p>
     </header>
 
     <div class="container">
         <div class="iframe-wrapper">
             <div class="controls">
-                <div class="info">
-                    <strong>Visualización interactiva</strong> - Ajusta los parámetros para ver cómo cambian α, β y la potencia
-                </div>
                 <button onclick="reloadIframe()">🔄 Recargar</button>
             </div>
             <iframe
