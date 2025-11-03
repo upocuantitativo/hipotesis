@@ -4,603 +4,560 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Contraste de Hipótesis para la Media Poblacional</title>
-    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-    <script src="https://unpkg.com/recharts@2.5.0/dist/Recharts.js"></script>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+
+        h1 {
+            text-align: center;
+            color: #4a5568;
+            margin-bottom: 10px;
+            font-size: 2em;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #718096;
+            margin-bottom: 30px;
+            font-size: 0.95em;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            gap: 30px;
+        }
+
+        .controls {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .card {
+            background: #f7fafc;
+            border-radius: 12px;
+            padding: 20px;
+            border: 2px solid #e2e8f0;
+        }
+
+        .card h2 {
+            font-size: 1.1em;
+            color: #2d3748;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .badge {
+            background: #667eea;
+            color: white;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.9em;
+            font-weight: bold;
+        }
+
+        .control-group {
+            margin-bottom: 15px;
+        }
+
+        .control-group label {
+            display: block;
+            font-weight: 600;
+            color: #4a5568;
+            margin-bottom: 8px;
+            font-size: 0.9em;
+        }
+
+        .slider-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .value-display {
+            min-width: 50px;
+            font-weight: bold;
+            color: #667eea;
+            font-size: 1.1em;
+        }
+
+        input[type="range"] {
+            flex: 1;
+            height: 8px;
+            border-radius: 5px;
+            background: #cbd5e0;
+            outline: none;
+            -webkit-appearance: none;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #667eea;
+            cursor: pointer;
+        }
+
+        input[type="range"]::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #667eea;
+            cursor: pointer;
+            border: none;
+        }
+
+        .button-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        button {
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 0.9em;
+        }
+
+        button.active {
+            background: #667eea;
+            color: white;
+        }
+
+        button:not(.active) {
+            background: #e2e8f0;
+            color: #4a5568;
+        }
+
+        button:hover:not(.active) {
+            background: #cbd5e0;
+        }
+
+        .hypothesis-box {
+            background: #edf2f7;
+            border: 2px solid #667eea;
+            border-radius: 8px;
+            padding: 15px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.95em;
+        }
+
+        .chart-container {
+            position: relative;
+            height: 450px;
+            margin-bottom: 20px;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .stat-box {
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .stat-box.alpha { background: #fed7d7; border-left: 4px solid #fc8181; }
+        .stat-box.beta { background: #feebc8; border-left: 4px solid #f6ad55; }
+        .stat-box.power { background: #c6f6d5; border-left: 4px solid #48bb78; }
+
+        .stat-box h3 {
+            font-size: 0.85em;
+            margin-bottom: 5px;
+            color: #2d3748;
+        }
+
+        .stat-box .value {
+            font-size: 1.8em;
+            font-weight: bold;
+            color: #1a202c;
+        }
+
+        .info-box {
+            background: #ebf8ff;
+            border: 2px solid #4299e1;
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 20px;
+        }
+
+        .info-box h3 {
+            color: #2c5282;
+            margin-bottom: 10px;
+            font-size: 1em;
+        }
+
+        .info-box p {
+            color: #2d3748;
+            font-size: 0.9em;
+            line-height: 1.6;
+        }
+
+        .helper-text {
+            font-size: 0.8em;
+            color: #718096;
+            margin-top: 5px;
+        }
+    </style>
 </head>
 <body>
-    <div id="root"></div>
+    <div class="container">
+        <h1>Contraste de Hipótesis para la Media Poblacional</h1>
+        <p class="subtitle">Análisis Interactivo de Errores Estadísticos, Potencia y Confianza</p>
 
-    <script type="text/babel">
-const { useState, useMemo } = React;
-const { LineChart, Line, Area, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ReferenceLine, ComposedChart } = Recharts;
+        <div class="grid">
+            <!-- Panel de controles -->
+            <div class="controls">
+                <div class="card">
+                    <h2><span class="badge">1</span> Hipótesis</h2>
 
-const ErroresEstadisticos = () => {
-  const [step, setStep] = useState(4);
-  const [testType, setTestType] = useState('two-tailed');
-  const [mu0, setMu0] = useState(30);
-  const [mu1, setMu1] = useState(40);
-  const [alpha, setAlpha] = useState(0.05);
-  const [sampleSize, setSampleSize] = useState(8);
-  const [sigma, setSigma] = useState(10);
-
-  const normalPDF = (x, mean, sd) => {
-    return (1 / (sd * Math.sqrt(2 * Math.PI))) *
-           Math.exp(-0.5 * Math.pow((x - mean) / sd, 2));
-  };
-
-  const normalCDF = (x, mean, sd) => {
-    const z = (x - mean) / sd;
-    const t = 1 / (1 + 0.2316419 * Math.abs(z));
-    const d = 0.3989423 * Math.exp(-z * z / 2);
-    const prob = d * t * (0.3193815 + t * (-0.3565638 + t * (1.781478 + t * (-1.821256 + t * 1.330274))));
-    return z > 0 ? 1 - prob : prob;
-  };
-
-  const inverseNormalCDF = (p) => {
-    const a1 = -39.6968302866538, a2 = 220.946098424521, a3 = -275.928510446969;
-    const a4 = 138.357751867269, a5 = -30.6647980661472, a6 = 2.50662827745924;
-    const b1 = -54.4760987982241, b2 = 161.585836858041, b3 = -155.698979859887;
-    const b4 = 66.8013118877197, b5 = -13.2806815528857;
-    const c1 = -7.78489400243029E-03, c2 = -0.322396458041136, c3 = -2.40075827716184;
-    const c4 = -2.54973253934373, c5 = 4.37466414146497, c6 = 2.93816398269878;
-    const d1 = 7.78469570904146E-03, d2 = 0.32246712907004, d3 = 2.445134137143;
-    const d4 = 3.75440866190742;
-    const pLow = 0.02425, pHigh = 1 - pLow;
-    let q, r, x;
-
-    if (p < pLow) {
-      q = Math.sqrt(-2 * Math.log(p));
-      x = (((((c1 * q + c2) * q + c3) * q + c4) * q + c5) * q + c6) /
-          ((((d1 * q + d2) * q + d3) * q + d4) * q + 1);
-    } else if (p <= pHigh) {
-      q = p - 0.5;
-      r = q * q;
-      x = (((((a1 * r + a2) * r + a3) * r + a4) * r + a5) * r + a6) * q /
-          (((((b1 * r + b2) * r + b3) * r + b4) * r + b5) * r + 1);
-    } else {
-      q = Math.sqrt(-2 * Math.log(1 - p));
-      x = -(((((c1 * q + c2) * q + c3) * q + c4) * q + c5) * q + c6) /
-           ((((d1 * q + d2) * q + d3) * q + d4) * q + 1);
-    }
-    return x;
-  };
-
-  const data = useMemo(() => {
-    const seM = sigma / Math.sqrt(sampleSize);
-
-    let criticalValue;
-    if (testType === 'two-tailed') {
-      criticalValue = inverseNormalCDF(1 - alpha / 2) * seM + mu0;
-    } else {
-      criticalValue = inverseNormalCDF(1 - alpha) * seM + mu0;
-    }
-
-    const points = [];
-    const rangeStart = 20;
-    const rangeEnd = 50;
-    const stepSize = (rangeEnd - rangeStart) / 400;
-
-    for (let x = rangeStart; x <= rangeEnd; x += stepSize) {
-      const y0 = normalPDF(x, mu0, seM);
-      const y1 = normalPDF(x, mu1, seM);
-
-      let errorTipo1 = 0;
-      let errorTipo2 = 0;
-      let potencia = 0;
-
-      if (step >= 4) {
-        if (testType === 'two-tailed') {
-          const criticalLower = 2 * mu0 - criticalValue;
-          if (x >= criticalValue || x <= criticalLower) {
-            errorTipo1 = y0;
-          }
-          if (x < criticalValue && x > criticalLower) {
-            errorTipo2 = y1;
-          }
-          if (x >= criticalValue || x <= criticalLower) {
-            potencia = y1;
-          }
-        } else {
-          if (mu1 > mu0) {
-            if (x >= criticalValue) {
-              errorTipo1 = y0;
-              potencia = y1;
-            }
-            if (x < criticalValue) {
-              errorTipo2 = y1;
-            }
-          } else {
-            if (x <= criticalValue) {
-              errorTipo1 = y0;
-              potencia = y1;
-            }
-            if (x > criticalValue) {
-              errorTipo2 = y1;
-            }
-          }
-        }
-      }
-
-      points.push({
-        x: parseFloat(x.toFixed(3)),
-        H0: y0,
-        H1: y1,
-        errorTipo1,
-        errorTipo2,
-        potencia,
-        criticalValue
-      });
-    }
-
-    return points;
-  }, [alpha, mu0, mu1, sampleSize, sigma, testType, step]);
-
-  const stats = useMemo(() => {
-    const seM = sigma / Math.sqrt(sampleSize);
-
-    let criticalValue;
-    if (testType === 'two-tailed') {
-      criticalValue = inverseNormalCDF(1 - alpha / 2) * seM + mu0;
-    } else {
-      criticalValue = inverseNormalCDF(1 - alpha) * seM + mu0;
-    }
-
-    let beta;
-    if (testType === 'two-tailed') {
-      const criticalLower = 2 * mu0 - criticalValue;
-      beta = normalCDF(criticalValue, mu1, seM) - normalCDF(criticalLower, mu1, seM);
-    } else {
-      if (mu1 > mu0) {
-        beta = normalCDF(criticalValue, mu1, seM);
-      } else {
-        beta = 1 - normalCDF(criticalValue, mu1, seM);
-      }
-    }
-
-    const power = 1 - beta;
-    const confidence = 1 - alpha;
-
-    return {
-      alpha: alpha,
-      beta: beta,
-      power: power,
-      confidence: confidence,
-      criticalValue: criticalValue,
-      seM: seM
-    };
-  }, [alpha, mu0, mu1, sampleSize, sigma, testType]);
-
-  return (
-    <div className="w-full min-h-screen p-6 bg-gradient-to-br from-blue-50 to-indigo-50">
-      <div className="max-w-full mx-auto">
-        <h1 className="text-3xl font-bold text-center mb-2 text-indigo-900">
-          Contraste de Hipótesis para la Media Poblacional
-        </h1>
-        <p className="text-center text-gray-600 mb-6 text-sm">
-          Análisis Progresivo de Errores Estadísticos, Potencia y Confianza
-        </p>
-
-        <div className="grid grid-cols-4 gap-4">
-          <div className="col-span-1 space-y-4">
-
-            <div className="bg-white rounded-lg shadow-lg p-4">
-              <h2 className="text-lg font-bold mb-3 text-gray-800 flex items-center gap-2">
-                <span className="bg-indigo-600 text-white rounded-full w-7 h-7 flex items-center justify-center text-sm">1</span>
-                <span className="text-sm">Hipótesis</span>
-              </h2>
-
-              <div className="mb-4">
-                <label className="block text-xs font-semibold text-gray-700 mb-2">
-                  Tipo de Contraste
-                </label>
-                <div className="flex flex-col gap-2">
-                  <button
-                    onClick={() => setTestType('two-tailed')}
-                    className={`px-3 py-2 rounded-lg text-xs font-medium transition-colors ${
-                      testType === 'two-tailed'
-                        ? 'bg-indigo-600 text-white'
-                        : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                    }`}
-                  >
-                    Bilateral (Dos Colas)
-                  </button>
-                  <button
-                    onClick={() => setTestType('one-tailed')}
-                    className={`px-3 py-2 rounded-lg text-xs font-medium transition-colors ${
-                      testType === 'one-tailed'
-                        ? 'bg-indigo-600 text-white'
-                        : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                    }`}
-                  >
-                    Unilateral (Una Cola)
-                  </button>
-                </div>
-              </div>
-
-              <div className="bg-indigo-50 p-3 rounded-lg border-2 border-indigo-200 mb-4">
-                <h3 className="font-semibold text-indigo-900 mb-2 text-xs">Sistema:</h3>
-                <div className="font-mono text-xs space-y-1">
-                  <div className="flex items-start gap-1">
-                    <span className="text-indigo-600">{"{"}</span>
-                    <div className="flex-1">
-                      <div><span className="font-semibold">H₀:</span> μ = {mu0.toFixed(1)}</div>
-                      <div><span className="font-semibold">H₁:</span> μ {testType === 'two-tailed' ? '≠' : (mu1 > mu0 ? '>' : '<')} {testType === 'two-tailed' ? mu0.toFixed(1) : mu1.toFixed(1)}</div>
+                    <div class="control-group">
+                        <label>Tipo de Contraste</label>
+                        <div class="button-group">
+                            <button id="btnTwoTailed" class="active" onclick="setTestType('two-tailed')">
+                                Bilateral (Dos Colas)
+                            </button>
+                            <button id="btnOneTailed" onclick="setTestType('one-tailed')">
+                                Unilateral (Una Cola)
+                            </button>
+                        </div>
                     </div>
-                  </div>
-                </div>
-              </div>
 
-              <div className="space-y-3">
-                <div>
-                  <label className="block text-xs font-semibold text-gray-700 mb-2">
-                    Media bajo H₀ (μ₀)
-                  </label>
-                  <div className="flex items-center gap-2">
-                    <div className="text-lg font-bold text-blue-600 w-12">{mu0.toFixed(1)}</div>
-                    <input
-                      type="range"
-                      min="20"
-                      max="40"
-                      step="0.5"
-                      value={mu0}
-                      onChange={(e) => setMu0(parseFloat(e.target.value))}
-                      className="flex-1 h-2 bg-blue-200 rounded-lg appearance-none cursor-pointer"
-                    />
-                  </div>
+                    <div class="hypothesis-box" id="hypothesisBox">
+                        <div><strong>H₀:</strong> μ = 30.0</div>
+                        <div><strong>H₁:</strong> μ ≠ 30.0</div>
+                    </div>
+
+                    <div class="control-group">
+                        <label>Media bajo H₀ (μ₀)</label>
+                        <div class="slider-container">
+                            <span class="value-display" id="mu0Value">30.0</span>
+                            <input type="range" id="mu0" min="20" max="40" step="0.5" value="30" oninput="updateParams()">
+                        </div>
+                    </div>
+
+                    <div class="control-group">
+                        <label>Media bajo H₁ (μ₁)</label>
+                        <div class="slider-container">
+                            <span class="value-display" id="mu1Value">40.0</span>
+                            <input type="range" id="mu1" min="30" max="50" step="0.5" value="40" oninput="updateParams()">
+                        </div>
+                    </div>
                 </div>
 
-                <div>
-                  <label className="block text-xs font-semibold text-gray-700 mb-2">
-                    Media bajo H₁ (μ₁)
-                  </label>
-                  <div className="flex items-center gap-2">
-                    <div className="text-lg font-bold text-purple-600 w-12">{mu1.toFixed(1)}</div>
-                    <input
-                      type="range"
-                      min="30"
-                      max="50"
-                      step="0.5"
-                      value={mu1}
-                      onChange={(e) => setMu1(parseFloat(e.target.value))}
-                      className="flex-1 h-2 bg-purple-200 rounded-lg appearance-none cursor-pointer"
-                    />
-                  </div>
+                <div class="card">
+                    <h2><span class="badge">2</span> Parámetros</h2>
+
+                    <div class="control-group">
+                        <label>Nivel de Significación (α)</label>
+                        <div class="slider-container">
+                            <span class="value-display" id="alphaValue">0.050</span>
+                            <input type="range" id="alpha" min="0.001" max="0.2" step="0.001" value="0.05" oninput="updateParams()">
+                        </div>
+                        <p class="helper-text">Probabilidad Error Tipo I</p>
+                    </div>
+
+                    <div class="control-group">
+                        <label>Tamaño Muestral (n)</label>
+                        <div class="slider-container">
+                            <span class="value-display" id="sampleSizeValue">8</span>
+                            <input type="range" id="sampleSize" min="5" max="200" step="1" value="8" oninput="updateParams()">
+                        </div>
+                        <p class="helper-text">Número de observaciones</p>
+                    </div>
+
+                    <div class="control-group">
+                        <label>Desviación Estándar (σ)</label>
+                        <div class="slider-container">
+                            <span class="value-display" id="sigmaValue">10.0</span>
+                            <input type="range" id="sigma" min="1" max="20" step="0.5" value="10" oninput="updateParams()">
+                        </div>
+                        <p class="helper-text">Variabilidad poblacional</p>
+                    </div>
+
+                    <div class="info-box">
+                        <strong>Error estándar:</strong> <span id="seValue">3.5355</span>
+                    </div>
                 </div>
-              </div>
             </div>
 
-            <div className="bg-white rounded-lg shadow-lg p-4">
-              <h2 className="text-lg font-bold mb-3 text-gray-800 flex items-center gap-2">
-                <span className="bg-indigo-600 text-white rounded-full w-7 h-7 flex items-center justify-center text-sm">2</span>
-                <span className="text-sm">Parámetros</span>
-              </h2>
+            <!-- Panel principal -->
+            <div class="main-panel">
+                <div class="card">
+                    <h2><span class="badge">3</span> Distribuciones Muestrales</h2>
+                    <div class="chart-container">
+                        <canvas id="chart"></canvas>
+                    </div>
 
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-xs font-semibold text-gray-700 mb-2">
-                    Nivel de Significación (α)
-                  </label>
-                  <div className="flex items-center gap-2">
-                    <div className="text-lg font-bold text-red-600 w-14">{alpha.toFixed(3)}</div>
-                    <input
-                      type="range"
-                      min="0.001"
-                      max="0.2"
-                      step="0.001"
-                      value={alpha}
-                      onChange={(e) => setAlpha(parseFloat(e.target.value))}
-                      className="flex-1 h-2 bg-red-200 rounded-lg appearance-none cursor-pointer"
-                    />
-                  </div>
-                  <p className="text-xs text-gray-500 mt-1">Prob. Error Tipo I</p>
+                    <div class="stats-grid">
+                        <div class="stat-box alpha">
+                            <h3>Error Tipo I (α)</h3>
+                            <div class="value" id="alphaResult">5.00%</div>
+                        </div>
+                        <div class="stat-box beta">
+                            <h3>Error Tipo II (β)</h3>
+                            <div class="value" id="betaResult">0.00%</div>
+                        </div>
+                        <div class="stat-box power">
+                            <h3>Potencia (1-β)</h3>
+                            <div class="value" id="powerResult">100.00%</div>
+                        </div>
+                    </div>
                 </div>
 
-                <div>
-                  <label className="block text-xs font-semibold text-gray-700 mb-2">
-                    Tamaño Muestral (n)
-                  </label>
-                  <div className="flex items-center gap-2">
-                    <div className="text-lg font-bold text-blue-600 w-14">{sampleSize}</div>
-                    <input
-                      type="range"
-                      min="5"
-                      max="200"
-                      step="1"
-                      value={sampleSize}
-                      onChange={(e) => setSampleSize(parseInt(e.target.value))}
-                      className="flex-1 h-2 bg-blue-200 rounded-lg appearance-none cursor-pointer"
-                    />
-                  </div>
-                  <p className="text-xs text-gray-500 mt-1">Nº observaciones</p>
+                <div class="info-box">
+                    <h3>💡 Interpretación</h3>
+                    <p><strong>Error Tipo I (α):</strong> Rechazar H₀ cuando es verdadera (Falso Positivo)</p>
+                    <p><strong>Error Tipo II (β):</strong> No rechazar H₀ cuando es falsa (Falso Negativo)</p>
+                    <p><strong>Potencia (1-β):</strong> Rechazar H₀ cuando es falsa (se busca ≥ 80%)</p>
+                    <p style="margin-top: 10px;"><strong>Relaciones:</strong> ↑α reduce β | ↑n reduce β | ↑|μ₁-μ₀| reduce β | ↓σ reduce β</p>
                 </div>
-
-                <div>
-                  <label className="block text-xs font-semibold text-gray-700 mb-2">
-                    Desviación Estándar (σ)
-                  </label>
-                  <div className="flex items-center gap-2">
-                    <div className="text-lg font-bold text-green-600 w-14">{sigma.toFixed(1)}</div>
-                    <input
-                      type="range"
-                      min="1"
-                      max="20"
-                      step="0.5"
-                      value={sigma}
-                      onChange={(e) => setSigma(parseFloat(e.target.value))}
-                      className="flex-1 h-2 bg-green-200 rounded-lg appearance-none cursor-pointer"
-                    />
-                  </div>
-                  <p className="text-xs text-gray-500 mt-1">σ poblacional</p>
-                </div>
-              </div>
-
-              <div className="mt-3 bg-blue-50 p-2 rounded-lg border border-blue-200">
-                <p className="text-xs text-gray-700">
-                  <strong>σₓ̄ = </strong>{stats.seM.toFixed(4)}
-                </p>
-              </div>
             </div>
-          </div>
-
-          <div className="col-span-3 space-y-4">
-
-            <div className="bg-white rounded-lg shadow-lg p-5">
-              <h2 className="text-xl font-bold mb-3 text-gray-800 flex items-center gap-2">
-                <span className="bg-indigo-600 text-white rounded-full w-8 h-8 flex items-center justify-center text-sm">3</span>
-                Distribuciones Muestrales de la Media
-              </h2>
-
-              <ComposedChart width={950} height={450} data={data} margin={{ top: 20, right: 30, left: 30, bottom: 30 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#e0e0e0" />
-                <XAxis
-                  dataKey="x"
-                  label={{ value: 'Media Muestral (x̄)', position: 'insideBottom', offset: -15, style: { fontSize: 14, fontWeight: 'bold' } }}
-                  tick={{ fontSize: 11 }}
-                  domain={[20, 50]}
-                />
-                <YAxis
-                  label={{ value: 'Densidad de Probabilidad', angle: -90, position: 'insideLeft', style: { fontSize: 14, fontWeight: 'bold' } }}
-                  tick={{ fontSize: 11 }}
-                  domain={[0, 0.15]}
-                />
-                <Tooltip
-                  contentStyle={{ backgroundColor: 'rgba(255, 255, 255, 0.95)', border: '1px solid #ccc' }}
-                  formatter={(value) => value.toFixed(4)}
-                />
-                <Legend wrapperStyle={{ fontSize: '13px', paddingTop: '10px' }} />
-
-                <Area
-                  type="monotone"
-                  dataKey="errorTipo1"
-                  fill="#ef4444"
-                  fillOpacity={0.7}
-                  stroke="none"
-                  name="Error Tipo I (α)"
-                  isAnimationActive={false}
-                />
-
-                <Area
-                  type="monotone"
-                  dataKey="errorTipo2"
-                  fill="#f97316"
-                  fillOpacity={0.7}
-                  stroke="none"
-                  name="Error Tipo II (β)"
-                  isAnimationActive={false}
-                />
-
-                <Area
-                  type="monotone"
-                  dataKey="potencia"
-                  fill="#10b981"
-                  fillOpacity={0.5}
-                  stroke="none"
-                  name="Potencia (1-β)"
-                  isAnimationActive={false}
-                />
-
-                <Line
-                  type="monotone"
-                  dataKey="H0"
-                  stroke="#3b82f6"
-                  strokeWidth={3}
-                  dot={false}
-                  name="Distribución bajo H₀"
-                />
-                <Line
-                  type="monotone"
-                  dataKey="H1"
-                  stroke="#8b5cf6"
-                  strokeWidth={3}
-                  dot={false}
-                  name="Distribución bajo H₁"
-                />
-
-                <ReferenceLine
-                  x={mu0}
-                  stroke="#1e40af"
-                  strokeWidth={2}
-                  strokeDasharray="3 3"
-                  label={{ value: `μ₀=${mu0.toFixed(1)}`, position: 'top', fill: '#1e40af', fontSize: 12, fontWeight: 'bold' }}
-                />
-                <ReferenceLine
-                  x={mu1}
-                  stroke="#6b21a8"
-                  strokeWidth={2}
-                  strokeDasharray="3 3"
-                  label={{ value: `μ₁=${mu1.toFixed(1)}`, position: 'top', fill: '#6b21a8', fontSize: 12, fontWeight: 'bold' }}
-                />
-
-                <ReferenceLine
-                  x={stats.criticalValue}
-                  stroke="#dc2626"
-                  strokeWidth={3}
-                  strokeDasharray="5 5"
-                  label={{
-                    value: `Región Crítica`,
-                    position: testType === 'two-tailed' && mu1 < mu0 ? 'insideTopLeft' : 'insideTopRight',
-                    fill: '#dc2626',
-                    fontSize: 11,
-                    fontWeight: 'bold',
-                    offset: 10
-                  }}
-                />
-                {testType === 'two-tailed' && (
-                  <ReferenceLine
-                    x={2 * mu0 - stats.criticalValue}
-                    stroke="#dc2626"
-                    strokeWidth={3}
-                    strokeDasharray="5 5"
-                    label={{
-                      value: 'Región Crítica',
-                      position: 'insideTopLeft',
-                      fill: '#dc2626',
-                      fontSize: 11,
-                      fontWeight: 'bold',
-                      offset: 10
-                    }}
-                  />
-                )}
-              </ComposedChart>
-
-              <div className="mt-2 grid grid-cols-3 gap-2 text-center text-xs">
-                <div className="flex items-center justify-center gap-2">
-                  <div className="w-4 h-4 bg-red-400 rounded"></div>
-                  <span className="font-semibold text-red-800">Error Tipo I (α) = {(stats.alpha * 100).toFixed(2)}%</span>
-                </div>
-                <div className="flex items-center justify-center gap-2">
-                  <div className="w-4 h-4 bg-orange-400 rounded"></div>
-                  <span className="font-semibold text-orange-800">Error Tipo II (β) = {(stats.beta * 100).toFixed(2)}%</span>
-                </div>
-                <div className="flex items-center justify-center gap-2">
-                  <div className="w-4 h-4 bg-green-400 rounded"></div>
-                  <span className="font-semibold text-green-800">Potencia (1-β) = {(stats.power * 100).toFixed(2)}%</span>
-                </div>
-              </div>
-            </div>
-
-            <div className="bg-white rounded-lg shadow-lg p-5">
-              <h2 className="text-xl font-bold mb-4 text-gray-800 flex items-center gap-2">
-                <span className="bg-indigo-600 text-white rounded-full w-8 h-8 flex items-center justify-center text-sm">4</span>
-                Tabla de Decisión y Errores
-              </h2>
-
-              <div className="overflow-x-auto">
-                <table className="w-full border-collapse">
-                  <thead>
-                    <tr>
-                      <th className="border-2 border-gray-400 bg-gray-100 p-3"></th>
-                      <th className="border-2 border-gray-400 bg-blue-100 p-3 text-center font-bold text-blue-900" colSpan="2">
-                        REALIDAD
-                      </th>
-                    </tr>
-                    <tr>
-                      <th className="border-2 border-gray-400 bg-gray-100 p-3 text-center font-bold text-sm">
-                        DECISIÓN
-                      </th>
-                      <th className="border-2 border-gray-400 bg-blue-50 p-3 text-center font-semibold text-blue-800 text-sm">
-                        H₀ es Verdadera<br/>
-                        <span className="text-xs font-normal">(μ = μ₀)</span>
-                      </th>
-                      <th className="border-2 border-gray-400 bg-purple-50 p-3 text-center font-semibold text-purple-800 text-sm">
-                        H₀ es Falsa<br/>
-                        <span className="text-xs font-normal">(μ = μ₁)</span>
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr>
-                      <td className="border-2 border-gray-400 bg-gray-50 p-3 font-semibold text-center text-sm">
-                        No Rechazar H₀<br/>
-                        <span className="text-xs font-normal text-gray-600">(Aceptar H₀)</span>
-                      </td>
-                      <td className="border-2 border-gray-400 bg-green-50 p-3 text-center">
-                        <div className="text-base font-bold text-green-700 mb-1">✓ Decisión Correcta</div>
-                        <div className="text-2xl font-bold text-green-800">{(stats.confidence * 100).toFixed(2)}%</div>
-                        <div className="text-xs text-gray-600 mt-1">Confianza (1-α)</div>
-                      </td>
-                      <td className="border-2 border-gray-400 bg-orange-50 p-3 text-center">
-                        <div className="text-base font-bold text-orange-700 mb-1">✗ ERROR TIPO II</div>
-                        <div className="text-2xl font-bold text-orange-800">{(stats.beta * 100).toFixed(2)}%</div>
-                        <div className="text-xs text-gray-600 mt-1">β (Falso Negativo)</div>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td className="border-2 border-gray-400 bg-gray-50 p-3 font-semibold text-center text-sm">
-                        Rechazar H₀<br/>
-                        <span className="text-xs font-normal text-gray-600">(Aceptar H₁)</span>
-                      </td>
-                      <td className="border-2 border-gray-400 bg-red-50 p-3 text-center">
-                        <div className="text-base font-bold text-red-700 mb-1">✗ ERROR TIPO I</div>
-                        <div className="text-2xl font-bold text-red-800">{(stats.alpha * 100).toFixed(2)}%</div>
-                        <div className="text-xs text-gray-600 mt-1">α (Falso Positivo)</div>
-                      </td>
-                      <td className="border-2 border-gray-400 bg-green-50 p-3 text-center">
-                        <div className="text-base font-bold text-green-700 mb-1">✓ Decisión Correcta</div>
-                        <div className="text-2xl font-bold text-green-800">{(stats.power * 100).toFixed(2)}%</div>
-                        <div className="text-xs text-gray-600 mt-1">Potencia (1-β) {stats.power >= 0.8 ? '✓' : '⚠️'}</div>
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-            </div>
-
-            <div className="bg-white rounded-lg shadow-lg p-5">
-              <h2 className="text-lg font-bold mb-3 text-gray-800">📊 Interpretación de Resultados</h2>
-
-              <div className="grid md:grid-cols-2 gap-3 mb-3">
-                <div className="p-3 bg-red-50 rounded-lg border-l-4 border-red-500">
-                  <h3 className="font-bold text-red-800 mb-1 text-sm">🔴 Error Tipo I (α) = {(stats.alpha * 100).toFixed(2)}%</h3>
-                  <p className="text-xs text-gray-700">
-                    Probabilidad de rechazar H₀ cuando realmente es verdadera. Área en rojo bajo H₀ en región de rechazo.
-                  </p>
-                </div>
-
-                <div className="p-3 bg-orange-50 rounded-lg border-l-4 border-orange-500">
-                  <h3 className="font-bold text-orange-800 mb-1 text-sm">🟠 Error Tipo II (β) = {(stats.beta * 100).toFixed(2)}%</h3>
-                  <p className="text-xs text-gray-700">
-                    Probabilidad de no rechazar H₀ cuando es falsa. Área en naranja bajo H₁ en región de no rechazo.
-                  </p>
-                </div>
-
-                <div className="p-3 bg-green-50 rounded-lg border-l-4 border-green-500">
-                  <h3 className="font-bold text-green-800 mb-1 text-sm">🟢 Potencia (1-β) = {(stats.power * 100).toFixed(2)}% {stats.power >= 0.8 ? '✓ Adecuada' : '⚠️ Baja'}</h3>
-                  <p className="text-xs text-gray-700">
-                    Probabilidad de rechazar H₀ cuando es falsa. Área en verde bajo H₁ en región de rechazo. Se busca ≥ 80%.
-                  </p>
-                </div>
-
-                <div className="p-3 bg-blue-50 rounded-lg border-l-4 border-blue-500">
-                  <h3 className="font-bold text-blue-800 mb-1 text-sm">🔵 Confianza (1-α) = {(stats.confidence * 100).toFixed(2)}%</h3>
-                  <p className="text-xs text-gray-700">
-                    Probabilidad de no cometer Error Tipo I. Área bajo H₀ en región de no rechazo.
-                  </p>
-                </div>
-              </div>
-
-              <div className="p-3 bg-indigo-50 rounded-lg border-2 border-indigo-200">
-                <h3 className="font-bold text-indigo-900 mb-2 text-sm">💡 Relaciones Clave (Modifica los sliders para ver los cambios)</h3>
-                <div className="grid md:grid-cols-2 gap-2 text-xs text-gray-700">
-                  <p>• <strong>↑ α:</strong> Reduce β pero aumenta falsos positivos</p>
-                  <p>• <strong>↑ n:</strong> Reduce β (↑ potencia) sin afectar α</p>
-                  <p>• <strong>↑ |μ₁-μ₀|:</strong> Reduce β (↑ potencia)</p>
-                  <p>• <strong>↓ σ:</strong> Reduce β (↑ potencia)</p>
-                </div>
-              </div>
-            </div>
-          </div>
         </div>
-      </div>
     </div>
-  );
-};
 
-const root = ReactDOM.createRoot(document.getElementById('root'));
-root.render(<ErroresEstadisticos />);
+    <script>
+        let chart;
+        let testType = 'two-tailed';
+
+        // Función de densidad normal
+        function normalPDF(x, mean, sd) {
+            return (1 / (sd * Math.sqrt(2 * Math.PI))) *
+                   Math.exp(-0.5 * Math.pow((x - mean) / sd, 2));
+        }
+
+        // Función de distribución acumulada normal
+        function normalCDF(x, mean, sd) {
+            const z = (x - mean) / sd;
+            const t = 1 / (1 + 0.2316419 * Math.abs(z));
+            const d = 0.3989423 * Math.exp(-z * z / 2);
+            const prob = d * t * (0.3193815 + t * (-0.3565638 + t * (1.781478 + t * (-1.821256 + t * 1.330274))));
+            return z > 0 ? 1 - prob : prob;
+        }
+
+        // Función inversa de la CDF normal
+        function inverseNormalCDF(p) {
+            const a1 = -39.6968302866538, a2 = 220.946098424521, a3 = -275.928510446969;
+            const a4 = 138.357751867269, a5 = -30.6647980661472, a6 = 2.50662827745924;
+            const b1 = -54.4760987982241, b2 = 161.585836858041, b3 = -155.698979859887;
+            const b4 = 66.8013118877197, b5 = -13.2806815528857;
+            const c1 = -7.78489400243029E-03, c2 = -0.322396458041136, c3 = -2.40075827716184;
+            const c4 = -2.54973253934373, c5 = 4.37466414146497, c6 = 2.93816398269878;
+            const d1 = 7.78469570904146E-03, d2 = 0.32246712907004, d3 = 2.445134137143;
+            const d4 = 3.75440866190742;
+            const pLow = 0.02425, pHigh = 1 - pLow;
+            let q, r, x;
+
+            if (p < pLow) {
+                q = Math.sqrt(-2 * Math.log(p));
+                x = (((((c1 * q + c2) * q + c3) * q + c4) * q + c5) * q + c6) /
+                    ((((d1 * q + d2) * q + d3) * q + d4) * q + 1);
+            } else if (p <= pHigh) {
+                q = p - 0.5;
+                r = q * q;
+                x = (((((a1 * r + a2) * r + a3) * r + a4) * r + a5) * r + a6) * q /
+                    (((((b1 * r + b2) * r + b3) * r + b4) * r + b5) * r + 1);
+            } else {
+                q = Math.sqrt(-2 * Math.log(1 - p));
+                x = -(((((c1 * q + c2) * q + c3) * q + c4) * q + c5) * q + c6) /
+                     ((((d1 * q + d2) * q + d3) * q + d4) * q + 1);
+            }
+            return x;
+        }
+
+        function setTestType(type) {
+            testType = type;
+            document.getElementById('btnTwoTailed').classList.toggle('active', type === 'two-tailed');
+            document.getElementById('btnOneTailed').classList.toggle('active', type === 'one-tailed');
+            updateParams();
+        }
+
+        function updateParams() {
+            const mu0 = parseFloat(document.getElementById('mu0').value);
+            const mu1 = parseFloat(document.getElementById('mu1').value);
+            const alpha = parseFloat(document.getElementById('alpha').value);
+            const n = parseInt(document.getElementById('sampleSize').value);
+            const sigma = parseFloat(document.getElementById('sigma').value);
+
+            // Actualizar displays
+            document.getElementById('mu0Value').textContent = mu0.toFixed(1);
+            document.getElementById('mu1Value').textContent = mu1.toFixed(1);
+            document.getElementById('alphaValue').textContent = alpha.toFixed(3);
+            document.getElementById('sampleSizeValue').textContent = n;
+            document.getElementById('sigmaValue').textContent = sigma.toFixed(1);
+
+            const seM = sigma / Math.sqrt(n);
+            document.getElementById('seValue').textContent = seM.toFixed(4);
+
+            // Actualizar hipótesis
+            const h1Symbol = testType === 'two-tailed' ? '≠' : (mu1 > mu0 ? '>' : '<');
+            const h1Value = testType === 'two-tailed' ? mu0.toFixed(1) : mu1.toFixed(1);
+            document.getElementById('hypothesisBox').innerHTML = `
+                <div><strong>H₀:</strong> μ = ${mu0.toFixed(1)}</div>
+                <div><strong>H₁:</strong> μ ${h1Symbol} ${h1Value}</div>
+            `;
+
+            // Calcular estadísticas
+            let criticalValue;
+            if (testType === 'two-tailed') {
+                criticalValue = inverseNormalCDF(1 - alpha / 2) * seM + mu0;
+            } else {
+                criticalValue = inverseNormalCDF(1 - alpha) * seM + mu0;
+            }
+
+            let beta;
+            if (testType === 'two-tailed') {
+                const criticalLower = 2 * mu0 - criticalValue;
+                beta = normalCDF(criticalValue, mu1, seM) - normalCDF(criticalLower, mu1, seM);
+            } else {
+                if (mu1 > mu0) {
+                    beta = normalCDF(criticalValue, mu1, seM);
+                } else {
+                    beta = 1 - normalCDF(criticalValue, mu1, seM);
+                }
+            }
+
+            const power = 1 - beta;
+
+            // Actualizar resultados
+            document.getElementById('alphaResult').textContent = (alpha * 100).toFixed(2) + '%';
+            document.getElementById('betaResult').textContent = (beta * 100).toFixed(2) + '%';
+            document.getElementById('powerResult').textContent = (power * 100).toFixed(2) + '%';
+
+            // Actualizar gráfico
+            updateChart(mu0, mu1, seM, criticalValue, alpha);
+        }
+
+        function updateChart(mu0, mu1, seM, criticalValue, alpha) {
+            const labels = [];
+            const h0Data = [];
+            const h1Data = [];
+
+            const rangeStart = Math.min(mu0, mu1) - 4 * seM;
+            const rangeEnd = Math.max(mu0, mu1) + 4 * seM;
+            const step = (rangeEnd - rangeStart) / 200;
+
+            for (let x = rangeStart; x <= rangeEnd; x += step) {
+                labels.push(x.toFixed(2));
+                h0Data.push(normalPDF(x, mu0, seM));
+                h1Data.push(normalPDF(x, mu1, seM));
+            }
+
+            if (chart) {
+                chart.destroy();
+            }
+
+            const ctx = document.getElementById('chart').getContext('2d');
+            chart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: 'Distribución bajo H₀',
+                            data: h0Data,
+                            borderColor: 'rgb(59, 130, 246)',
+                            backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                            borderWidth: 3,
+                            fill: false,
+                            tension: 0.4,
+                            pointRadius: 0
+                        },
+                        {
+                            label: 'Distribución bajo H₁',
+                            data: h1Data,
+                            borderColor: 'rgb(139, 92, 246)',
+                            backgroundColor: 'rgba(139, 92, 246, 0.1)',
+                            borderWidth: 3,
+                            fill: false,
+                            tension: 0.4,
+                            pointRadius: 0
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'top'
+                        },
+                        tooltip: {
+                            mode: 'index',
+                            intersect: false
+                        }
+                    },
+                    scales: {
+                        x: {
+                            display: true,
+                            title: {
+                                display: true,
+                                text: 'Media Muestral (x̄)',
+                                font: { size: 14, weight: 'bold' }
+                            },
+                            ticks: {
+                                maxTicksLimit: 10
+                            }
+                        },
+                        y: {
+                            display: true,
+                            title: {
+                                display: true,
+                                text: 'Densidad de Probabilidad',
+                                font: { size: 14, weight: 'bold' }
+                            },
+                            beginAtZero: true
+                        }
+                    },
+                    interaction: {
+                        mode: 'nearest',
+                        axis: 'x',
+                        intersect: false
+                    }
+                }
+            });
+        }
+
+        // Inicializar
+        updateParams();
     </script>
 </body>
 </html>
