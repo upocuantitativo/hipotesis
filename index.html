@@ -375,19 +375,19 @@
                     <div class="legend-container" style="grid-template-columns: repeat(2, 1fr); gap: 10px;">
                         <div class="legend-item" style="background: #fed7d7;">
                             <div class="legend-color" style="background: #ef4444;"></div>
-                            <span><strong>Error Tipo I (α) = <span id="alphaPercent">5.00</span>%</strong></span>
+                            <span><strong>Error Tipo I (α) = <span id="alphaPercent">0.62100</span>%</strong></span>
                         </div>
                         <div class="legend-item" style="background: #feebc8;">
                             <div class="legend-color" style="background: #f97316;"></div>
-                            <span><strong>Error Tipo II (β) = <span id="betaPercent">0.00</span>%</strong></span>
+                            <span><strong>Error Tipo II (β) = <span id="betaPercent">0.62100</span>%</strong></span>
                         </div>
                         <div class="legend-item" style="background: #bfdbfe;">
                             <div class="legend-color" style="background: #3b82f6;"></div>
-                            <span><strong>Confianza (1-α) = <span id="confidencePercent">95.00</span>%</strong></span>
+                            <span><strong>Confianza (1-α) = <span id="confidencePercent">99.37900</span>%</strong></span>
                         </div>
                         <div class="legend-item" style="background: #c6f6d5;">
                             <div class="legend-color" style="background: #10b981;"></div>
-                            <span><strong>Potencia (1-β) = <span id="powerPercent">100.00</span>%</strong></span>
+                            <span><strong>Potencia (1-β) = <span id="powerPercent">99.37900</span>%</strong></span>
                         </div>
                     </div>
                 </div>
@@ -413,12 +413,12 @@
                                     <th>No Rechazar H₀<br><span style="font-weight: normal; font-size: 0.85em;">(Aceptar H₀)</span></th>
                                     <td class="cell-correct-confidence">
                                         <div style="font-weight: bold; color: #1e40af;">✓ Decisión Correcta</div>
-                                        <div class="cell-value" style="color: #1e40af;"><span id="confidenceTable">95.00</span>%</div>
+                                        <div class="cell-value" style="color: #1e40af;"><span id="confidenceTable">99.37900</span>%</div>
                                         <div class="cell-label">Confianza (1-α)</div>
                                     </td>
                                     <td class="cell-error-tipo2">
                                         <div style="font-weight: bold; color: #744210;">✗ ERROR TIPO II</div>
-                                        <div class="cell-value" style="color: #744210;"><span id="betaTable">0.00</span>%</div>
+                                        <div class="cell-value" style="color: #744210;"><span id="betaTable">0.62100</span>%</div>
                                         <div class="cell-label">β (Falso Negativo)</div>
                                     </td>
                                 </tr>
@@ -426,12 +426,12 @@
                                     <th>Rechazar H₀<br><span style="font-weight: normal; font-size: 0.85em;">(Aceptar H₁)</span></th>
                                     <td class="cell-error-tipo1">
                                         <div style="font-weight: bold; color: #742a2a;">✗ ERROR TIPO I</div>
-                                        <div class="cell-value" style="color: #742a2a;"><span id="alphaTable">5.00</span>%</div>
+                                        <div class="cell-value" style="color: #742a2a;"><span id="alphaTable">0.62100</span>%</div>
                                         <div class="cell-label">α (Falso Positivo)</div>
                                     </td>
                                     <td class="cell-correct-power">
                                         <div style="font-weight: bold; color: #22543d;">✓ Decisión Correcta</div>
-                                        <div class="cell-value" style="color: #22543d;"><span id="powerTable">100.00</span>%</div>
+                                        <div class="cell-value" style="color: #22543d;"><span id="powerTable">99.37900</span>%</div>
                                         <div class="cell-label">Potencia (1-β)</div>
                                     </td>
                                 </tr>
@@ -533,17 +533,17 @@
 
             currentStats = { alpha, beta, power, confidence, criticalValue, mu0, mu1, seM };
 
-            // Actualizar resultados en leyenda
-            document.getElementById('alphaPercent').textContent = (alpha * 100).toFixed(2);
-            document.getElementById('betaPercent').textContent = (beta * 100).toFixed(2);
-            document.getElementById('confidencePercent').textContent = (confidence * 100).toFixed(2);
-            document.getElementById('powerPercent').textContent = (power * 100).toFixed(2);
+            // Actualizar resultados en leyenda (5 decimales)
+            document.getElementById('alphaPercent').textContent = (alpha * 100).toFixed(5);
+            document.getElementById('betaPercent').textContent = (beta * 100).toFixed(5);
+            document.getElementById('confidencePercent').textContent = (confidence * 100).toFixed(5);
+            document.getElementById('powerPercent').textContent = (power * 100).toFixed(5);
 
-            // Actualizar tabla
-            document.getElementById('confidenceTable').textContent = (confidence * 100).toFixed(2);
-            document.getElementById('betaTable').textContent = (beta * 100).toFixed(2);
-            document.getElementById('alphaTable').textContent = (alpha * 100).toFixed(2);
-            document.getElementById('powerTable').textContent = (power * 100).toFixed(2);
+            // Actualizar tabla (5 decimales)
+            document.getElementById('confidenceTable').textContent = (confidence * 100).toFixed(5);
+            document.getElementById('betaTable').textContent = (beta * 100).toFixed(5);
+            document.getElementById('alphaTable').textContent = (alpha * 100).toFixed(5);
+            document.getElementById('powerTable').textContent = (power * 100).toFixed(5);
 
             // Actualizar gráfico
             drawChart();
