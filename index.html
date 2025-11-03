@@ -334,8 +334,8 @@
                     <div class="control-group">
                         <label>Nivel de Significación (α)</label>
                         <div class="slider-container">
-                            <span class="value-display" id="alphaValue">0.050</span>
-                            <input type="range" id="alpha" min="0.001" max="0.2" step="0.001" value="0.05" oninput="updateParams()">
+                            <span class="value-display" id="alphaValue">0.006</span>
+                            <input type="range" id="alpha" min="0.001" max="0.2" step="0.00001" value="0.00621" oninput="updateParams()">
                         </div>
                         <p class="helper-text">Prob. Error Tipo I</p>
                     </div>
@@ -352,8 +352,8 @@
                     <div class="control-group">
                         <label>Desviación Estándar (σ)</label>
                         <div class="slider-container">
-                            <span class="value-display" id="sigmaValue">12.0</span>
-                            <input type="range" id="sigma" min="1" max="20" step="0.5" value="12" oninput="updateParams()">
+                            <span class="value-display" id="sigmaValue">10.0</span>
+                            <input type="range" id="sigma" min="1" max="20" step="0.5" value="10" oninput="updateParams()">
                         </div>
                         <p class="helper-text">σ poblacional</p>
                     </div>
@@ -509,7 +509,7 @@
             // Actualizar displays
             document.getElementById('mu0Value').textContent = mu0.toFixed(1);
             document.getElementById('mu1Value').textContent = mu1.toFixed(1);
-            document.getElementById('alphaValue').textContent = alpha.toFixed(3);
+            document.getElementById('alphaValue').textContent = alpha.toFixed(5);
             document.getElementById('sampleSizeValue').textContent = n;
             document.getElementById('sigmaValue').textContent = sigma.toFixed(1);
 
