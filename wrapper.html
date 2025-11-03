@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contraste de Hipótesis Estadísticas - Herramienta Interactiva</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        header {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 1.5rem 2rem;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        header h1 {
+            color: #667eea;
+            font-size: 1.8rem;
+            margin-bottom: 0.5rem;
+        }
+
+        header p {
+            color: #555;
+            font-size: 1rem;
+        }
+
+        .container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            padding: 1rem;
+            max-width: 1800px;
+            width: 100%;
+            margin: 0 auto;
+        }
+
+        .iframe-wrapper {
+            flex: 1;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        iframe {
+            flex: 1;
+            width: 100%;
+            border: none;
+            min-height: 600px;
+        }
+
+        footer {
+            background: rgba(255, 255, 255, 0.9);
+            padding: 1rem 2rem;
+            text-align: center;
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        footer a {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        footer a:hover {
+            text-decoration: underline;
+        }
+
+        .controls {
+            padding: 1rem 2rem;
+            background: #f8f9fa;
+            border-bottom: 1px solid #e0e0e0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .controls button {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 0.5rem 1.5rem;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 600;
+            transition: background 0.3s;
+        }
+
+        .controls button:hover {
+            background: #5568d3;
+        }
+
+        .controls .info {
+            font-size: 0.85rem;
+            color: #666;
+        }
+
+        @media (max-width: 768px) {
+            header h1 {
+                font-size: 1.4rem;
+            }
+
+            header p {
+                font-size: 0.9rem;
+            }
+
+            .controls {
+                flex-direction: column;
+                gap: 1rem;
+                align-items: flex-start;
+            }
+
+            iframe {
+                min-height: 500px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>📊 Contraste de Hipótesis para la Media Poblacional</h1>
+        <p>Herramienta interactiva para visualizar y comprender los errores estadísticos (Tipo I, Tipo II) y la potencia del contraste</p>
+    </header>
+
+    <div class="container">
+        <div class="iframe-wrapper">
+            <div class="controls">
+                <div class="info">
+                    <strong>Visualización interactiva</strong> - Ajusta los parámetros para ver cómo cambian α, β y la potencia
+                </div>
+                <button onclick="reloadIframe()">🔄 Recargar</button>
+            </div>
+            <iframe
+                id="hypothesis-frame"
+                src="https://upocuantitativo.github.io/hipotesis/"
+                title="Contraste de Hipótesis Interactivo"
+                loading="lazy"
+            ></iframe>
+        </div>
+    </div>
+
+    <footer>
+        <p>
+            <strong>Proyecto Educativo</strong> |
+            <a href="https://github.com/upocuantitativo/hipotesis" target="_blank">Ver código en GitHub</a> |
+            <a href="https://upocuantitativo.github.io/hipotesis/" target="_blank">Abrir en ventana completa</a>
+        </p>
+    </footer>
+
+    <script>
+        function reloadIframe() {
+            const iframe = document.getElementById('hypothesis-frame');
+            iframe.src = iframe.src;
+        }
+
+        // Mensaje de carga
+        const iframe = document.getElementById('hypothesis-frame');
+        iframe.addEventListener('load', function() {
+            console.log('Visualización cargada correctamente');
+        });
+
+        // Ajustar altura del iframe dinámicamente si es necesario
+        window.addEventListener('resize', function() {
+            // El CSS ya maneja esto con flex, pero lo dejamos por si acaso
+        });
+    </script>
+</body>
+</html>
