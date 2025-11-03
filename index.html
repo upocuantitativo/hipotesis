@@ -737,6 +737,42 @@
                 ctx.lineTo(px, canvas.height - padding + 5);
                 ctx.stroke();
             }
+
+            // Eje Y derecho para escala de densidad
+            ctx.strokeStyle = '#000';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(canvas.width - padding, padding);
+            ctx.lineTo(canvas.width - padding, canvas.height - padding);
+            ctx.stroke();
+
+            // Marcas en eje Y derecho (densidad)
+            ctx.fillStyle = '#000';
+            ctx.font = '10px Arial';
+            ctx.textAlign = 'left';
+            const numTicksY = 5;
+            for (let i = 0; i <= numTicksY; i++) {
+                const density = (maxY / numTicksY) * i;
+                const py = mapY(density);
+
+                // Marca
+                ctx.beginPath();
+                ctx.moveTo(canvas.width - padding - 5, py);
+                ctx.lineTo(canvas.width - padding, py);
+                ctx.stroke();
+
+                // Etiqueta
+                ctx.fillText(density.toFixed(3), canvas.width - padding + 8, py + 4);
+            }
+
+            // Etiqueta del eje Y derecho
+            ctx.save();
+            ctx.translate(canvas.width - 15, canvas.height / 2);
+            ctx.rotate(-Math.PI / 2);
+            ctx.font = 'bold 12px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText('Densidad', 0, 0);
+            ctx.restore();
         }
 
         // Inicializar
