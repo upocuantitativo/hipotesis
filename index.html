@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Contraste de Hipótesis para la Media Poblacional</title>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <style>
         * {
             margin: 0;
@@ -13,14 +12,14 @@
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
             padding: 20px;
         }
 
         .container {
-            max-width: 1400px;
+            max-width: 1600px;
             margin: 0 auto;
             background: white;
             border-radius: 20px;
@@ -30,7 +29,7 @@
 
         h1 {
             text-align: center;
-            color: #4a5568;
+            color: #2d3748;
             margin-bottom: 10px;
             font-size: 2em;
         }
@@ -39,13 +38,12 @@
             text-align: center;
             color: #718096;
             margin-bottom: 30px;
-            font-size: 0.95em;
         }
 
         .grid {
             display: grid;
-            grid-template-columns: 300px 1fr;
-            gap: 30px;
+            grid-template-columns: 280px 1fr;
+            gap: 25px;
         }
 
         .controls {
@@ -62,24 +60,24 @@
         }
 
         .card h2 {
-            font-size: 1.1em;
+            font-size: 1em;
             color: #2d3748;
             margin-bottom: 15px;
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 8px;
         }
 
         .badge {
             background: #667eea;
             color: white;
-            width: 28px;
-            height: 28px;
+            width: 26px;
+            height: 26px;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 0.9em;
+            font-size: 0.85em;
             font-weight: bold;
         }
 
@@ -92,26 +90,26 @@
             font-weight: 600;
             color: #4a5568;
             margin-bottom: 8px;
-            font-size: 0.9em;
+            font-size: 0.85em;
         }
 
         .slider-container {
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 8px;
         }
 
         .value-display {
-            min-width: 50px;
+            min-width: 45px;
             font-weight: bold;
             color: #667eea;
-            font-size: 1.1em;
+            font-size: 1em;
         }
 
         input[type="range"] {
             flex: 1;
-            height: 8px;
-            border-radius: 5px;
+            height: 6px;
+            border-radius: 3px;
             background: #cbd5e0;
             outline: none;
             -webkit-appearance: none;
@@ -119,17 +117,16 @@
 
         input[type="range"]::-webkit-slider-thumb {
             -webkit-appearance: none;
-            appearance: none;
-            width: 20px;
-            height: 20px;
+            width: 18px;
+            height: 18px;
             border-radius: 50%;
             background: #667eea;
             cursor: pointer;
         }
 
         input[type="range"]::-moz-range-thumb {
-            width: 20px;
-            height: 20px;
+            width: 18px;
+            height: 18px;
             border-radius: 50%;
             background: #667eea;
             cursor: pointer;
@@ -143,13 +140,13 @@
         }
 
         button {
-            padding: 12px;
+            padding: 10px;
             border: none;
             border-radius: 8px;
             font-weight: 600;
             cursor: pointer;
             transition: all 0.3s;
-            font-size: 0.9em;
+            font-size: 0.8em;
         }
 
         button.active {
@@ -162,85 +159,142 @@
             color: #4a5568;
         }
 
-        button:hover:not(.active) {
-            background: #cbd5e0;
-        }
-
         .hypothesis-box {
             background: #edf2f7;
             border: 2px solid #667eea;
             border-radius: 8px;
-            padding: 15px;
+            padding: 12px;
             font-family: 'Courier New', monospace;
-            font-size: 0.95em;
+            font-size: 0.9em;
         }
 
         .chart-container {
             position: relative;
-            height: 450px;
+            height: 500px;
             margin-bottom: 20px;
         }
 
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 15px;
-            margin-top: 15px;
+        canvas {
+            max-width: 100%;
         }
 
-        .stat-box {
-            padding: 15px;
-            border-radius: 8px;
-            text-align: center;
+        .helper-text {
+            font-size: 0.75em;
+            color: #718096;
+            margin-top: 4px;
         }
 
-        .stat-box.alpha { background: #fed7d7; border-left: 4px solid #fc8181; }
-        .stat-box.beta { background: #feebc8; border-left: 4px solid #f6ad55; }
-        .stat-box.power { background: #c6f6d5; border-left: 4px solid #48bb78; }
-
-        .stat-box h3 {
-            font-size: 0.85em;
-            margin-bottom: 5px;
-            color: #2d3748;
-        }
-
-        .stat-box .value {
-            font-size: 1.8em;
-            font-weight: bold;
-            color: #1a202c;
-        }
-
-        .info-box {
+        .se-box {
             background: #ebf8ff;
             border: 2px solid #4299e1;
             border-radius: 8px;
+            padding: 10px;
+            font-size: 0.85em;
+            margin-top: 10px;
+        }
+
+        /* Tabla de decisión */
+        .decision-table-container {
+            margin-top: 25px;
+            overflow-x: auto;
+        }
+
+        table.decision-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.9em;
+        }
+
+        table.decision-table th,
+        table.decision-table td {
+            border: 2px solid #4a5568;
+            padding: 15px;
+            text-align: center;
+        }
+
+        table.decision-table th {
+            background: #edf2f7;
+            font-weight: bold;
+            color: #2d3748;
+        }
+
+        .table-header-realidad {
+            background: #bee3f8 !important;
+            color: #2c5282 !important;
+            font-weight: bold;
+        }
+
+        .cell-correct {
+            background: #c6f6d5;
+        }
+
+        .cell-error-tipo1 {
+            background: #fed7d7;
+        }
+
+        .cell-error-tipo2 {
+            background: #feebc8;
+        }
+
+        .cell-value {
+            font-size: 1.5em;
+            font-weight: bold;
+            margin: 8px 0;
+        }
+
+        .cell-label {
+            font-size: 0.85em;
+            color: #4a5568;
+        }
+
+        .legend-container {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            margin-top: 20px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px;
+            border-radius: 8px;
+            font-size: 0.85em;
+        }
+
+        .legend-color {
+            width: 20px;
+            height: 20px;
+            border-radius: 4px;
+        }
+
+        .interpretation-box {
+            background: #e6fffa;
+            border: 2px solid #38b2ac;
+            border-radius: 12px;
             padding: 15px;
             margin-top: 20px;
         }
 
-        .info-box h3 {
-            color: #2c5282;
+        .interpretation-box h3 {
+            color: #234e52;
             margin-bottom: 10px;
             font-size: 1em;
         }
 
-        .info-box p {
+        .interpretation-box p {
             color: #2d3748;
-            font-size: 0.9em;
+            font-size: 0.85em;
             line-height: 1.6;
-        }
-
-        .helper-text {
-            font-size: 0.8em;
-            color: #718096;
-            margin-top: 5px;
+            margin-bottom: 8px;
         }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>Contraste de Hipótesis para la Media Poblacional</h1>
-        <p class="subtitle">Análisis Interactivo de Errores Estadísticos, Potencia y Confianza</p>
+        <p class="subtitle">Análisis Progresivo de Errores Estadísticos, Potencia y Confianza</p>
 
         <div class="grid">
             <!-- Panel de controles -->
@@ -291,7 +345,7 @@
                             <span class="value-display" id="alphaValue">0.050</span>
                             <input type="range" id="alpha" min="0.001" max="0.2" step="0.001" value="0.05" oninput="updateParams()">
                         </div>
-                        <p class="helper-text">Probabilidad Error Tipo I</p>
+                        <p class="helper-text">Prob. Error Tipo I</p>
                     </div>
 
                     <div class="control-group">
@@ -300,7 +354,7 @@
                             <span class="value-display" id="sampleSizeValue">8</span>
                             <input type="range" id="sampleSize" min="5" max="200" step="1" value="8" oninput="updateParams()">
                         </div>
-                        <p class="helper-text">Número de observaciones</p>
+                        <p class="helper-text">Nº observaciones</p>
                     </div>
 
                     <div class="control-group">
@@ -309,11 +363,11 @@
                             <span class="value-display" id="sigmaValue">10.0</span>
                             <input type="range" id="sigma" min="1" max="20" step="0.5" value="10" oninput="updateParams()">
                         </div>
-                        <p class="helper-text">Variabilidad poblacional</p>
+                        <p class="helper-text">σ poblacional</p>
                     </div>
 
-                    <div class="info-box">
-                        <strong>Error estándar:</strong> <span id="seValue">3.5355</span>
+                    <div class="se-box">
+                        <strong>σₓ̄ = </strong><span id="seValue">3.5355</span>
                     </div>
                 </div>
             </div>
@@ -321,41 +375,89 @@
             <!-- Panel principal -->
             <div class="main-panel">
                 <div class="card">
-                    <h2><span class="badge">3</span> Distribuciones Muestrales</h2>
+                    <h2><span class="badge">3</span> Distribuciones Muestrales de la Media</h2>
                     <div class="chart-container">
                         <canvas id="chart"></canvas>
                     </div>
 
-                    <div class="stats-grid">
-                        <div class="stat-box alpha">
-                            <h3>Error Tipo I (α)</h3>
-                            <div class="value" id="alphaResult">5.00%</div>
+                    <div class="legend-container">
+                        <div class="legend-item" style="background: #fed7d7;">
+                            <div class="legend-color" style="background: #ef4444;"></div>
+                            <span><strong>Error Tipo I (α) = <span id="alphaPercent">5.00</span>%</strong></span>
                         </div>
-                        <div class="stat-box beta">
-                            <h3>Error Tipo II (β)</h3>
-                            <div class="value" id="betaResult">0.00%</div>
+                        <div class="legend-item" style="background: #feebc8;">
+                            <div class="legend-color" style="background: #f97316;"></div>
+                            <span><strong>Error Tipo II (β) = <span id="betaPercent">0.00</span>%</strong></span>
                         </div>
-                        <div class="stat-box power">
-                            <h3>Potencia (1-β)</h3>
-                            <div class="value" id="powerResult">100.00%</div>
+                        <div class="legend-item" style="background: #c6f6d5;">
+                            <div class="legend-color" style="background: #10b981;"></div>
+                            <span><strong>Potencia (1-β) = <span id="powerPercent">100.00</span>%</strong></span>
                         </div>
                     </div>
                 </div>
 
-                <div class="info-box">
-                    <h3>💡 Interpretación</h3>
-                    <p><strong>Error Tipo I (α):</strong> Rechazar H₀ cuando es verdadera (Falso Positivo)</p>
-                    <p><strong>Error Tipo II (β):</strong> No rechazar H₀ cuando es falsa (Falso Negativo)</p>
-                    <p><strong>Potencia (1-β):</strong> Rechazar H₀ cuando es falsa (se busca ≥ 80%)</p>
-                    <p style="margin-top: 10px;"><strong>Relaciones:</strong> ↑α reduce β | ↑n reduce β | ↑|μ₁-μ₀| reduce β | ↓σ reduce β</p>
+                <div class="card">
+                    <h2><span class="badge">4</span> Tabla de Decisión y Errores</h2>
+
+                    <div class="decision-table-container">
+                        <table class="decision-table">
+                            <thead>
+                                <tr>
+                                    <th></th>
+                                    <th colspan="2" class="table-header-realidad">REALIDAD</th>
+                                </tr>
+                                <tr>
+                                    <th>DECISIÓN</th>
+                                    <th>H₀ es Verdadera<br><span style="font-weight: normal; font-size: 0.85em;">(μ = μ₀)</span></th>
+                                    <th>H₀ es Falsa<br><span style="font-weight: normal; font-size: 0.85em;">(μ = μ₁)</span></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <th>No Rechazar H₀<br><span style="font-weight: normal; font-size: 0.85em;">(Aceptar H₀)</span></th>
+                                    <td class="cell-correct">
+                                        <div style="font-weight: bold; color: #22543d;">✓ Decisión Correcta</div>
+                                        <div class="cell-value" style="color: #22543d;"><span id="confidenceTable">95.00</span>%</div>
+                                        <div class="cell-label">Confianza (1-α)</div>
+                                    </td>
+                                    <td class="cell-error-tipo2">
+                                        <div style="font-weight: bold; color: #744210;">✗ ERROR TIPO II</div>
+                                        <div class="cell-value" style="color: #744210;"><span id="betaTable">0.00</span>%</div>
+                                        <div class="cell-label">β (Falso Negativo)</div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th>Rechazar H₀<br><span style="font-weight: normal; font-size: 0.85em;">(Aceptar H₁)</span></th>
+                                    <td class="cell-error-tipo1">
+                                        <div style="font-weight: bold; color: #742a2a;">✗ ERROR TIPO I</div>
+                                        <div class="cell-value" style="color: #742a2a;"><span id="alphaTable">5.00</span>%</div>
+                                        <div class="cell-label">α (Falso Positivo)</div>
+                                    </td>
+                                    <td class="cell-correct">
+                                        <div style="font-weight: bold; color: #22543d;">✓ Decisión Correcta</div>
+                                        <div class="cell-value" style="color: #22543d;"><span id="powerTable">100.00</span>%</div>
+                                        <div class="cell-label">Potencia (1-β)</div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="interpretation-box">
+                    <h3>💡 Interpretación de Resultados</h3>
+                    <p><strong>Error Tipo I (α):</strong> Probabilidad de rechazar H₀ cuando realmente es verdadera. Área en rojo bajo H₀ en región de rechazo.</p>
+                    <p><strong>Error Tipo II (β):</strong> Probabilidad de no rechazar H₀ cuando es falsa. Área en naranja bajo H₁ en región de no rechazo.</p>
+                    <p><strong>Potencia (1-β):</strong> Probabilidad de rechazar H₀ cuando es falsa. Área en verde bajo H₁ en región de rechazo. Se busca ≥ 80%.</p>
+                    <p><strong>Relaciones Clave:</strong> ↑ α reduce β | ↑ n reduce β | ↑ |μ₁-μ₀| reduce β | ↓ σ reduce β</p>
                 </div>
             </div>
         </div>
     </div>
 
     <script>
-        let chart;
         let testType = 'two-tailed';
+        let currentStats = {};
 
         // Función de densidad normal
         function normalPDF(x, mean, sd) {
@@ -455,109 +557,288 @@
             }
 
             const power = 1 - beta;
+            const confidence = 1 - alpha;
+
+            currentStats = { alpha, beta, power, confidence, criticalValue, mu0, mu1, seM };
 
             // Actualizar resultados
-            document.getElementById('alphaResult').textContent = (alpha * 100).toFixed(2) + '%';
-            document.getElementById('betaResult').textContent = (beta * 100).toFixed(2) + '%';
-            document.getElementById('powerResult').textContent = (power * 100).toFixed(2) + '%';
+            document.getElementById('alphaPercent').textContent = (alpha * 100).toFixed(2);
+            document.getElementById('betaPercent').textContent = (beta * 100).toFixed(2);
+            document.getElementById('powerPercent').textContent = (power * 100).toFixed(2);
+
+            // Actualizar tabla
+            document.getElementById('confidenceTable').textContent = (confidence * 100).toFixed(2);
+            document.getElementById('betaTable').textContent = (beta * 100).toFixed(2);
+            document.getElementById('alphaTable').textContent = (alpha * 100).toFixed(2);
+            document.getElementById('powerTable').textContent = (power * 100).toFixed(2);
 
             // Actualizar gráfico
-            updateChart(mu0, mu1, seM, criticalValue, alpha);
+            drawChart();
         }
 
-        function updateChart(mu0, mu1, seM, criticalValue, alpha) {
-            const labels = [];
-            const h0Data = [];
-            const h1Data = [];
+        function drawChart() {
+            const canvas = document.getElementById('chart');
+            const ctx = canvas.getContext('2d');
 
+            // Configurar tamaño del canvas
+            const container = canvas.parentElement;
+            canvas.width = container.offsetWidth;
+            canvas.height = container.offsetHeight;
+
+            const { mu0, mu1, seM, criticalValue } = currentStats;
+
+            const padding = 60;
+            const chartWidth = canvas.width - 2 * padding;
+            const chartHeight = canvas.height - 2 * padding;
+
+            // Limpiar canvas
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Calcular rango
             const rangeStart = Math.min(mu0, mu1) - 4 * seM;
             const rangeEnd = Math.max(mu0, mu1) + 4 * seM;
-            const step = (rangeEnd - rangeStart) / 200;
 
-            for (let x = rangeStart; x <= rangeEnd; x += step) {
-                labels.push(x.toFixed(2));
-                h0Data.push(normalPDF(x, mu0, seM));
-                h1Data.push(normalPDF(x, mu1, seM));
+            // Encontrar máximo y para escala
+            let maxY = 0;
+            for (let x = rangeStart; x <= rangeEnd; x += (rangeEnd - rangeStart) / 200) {
+                maxY = Math.max(maxY, normalPDF(x, mu0, seM), normalPDF(x, mu1, seM));
             }
 
-            if (chart) {
-                chart.destroy();
+            // Función para mapear coordenadas
+            function mapX(x) {
+                return padding + ((x - rangeStart) / (rangeEnd - rangeStart)) * chartWidth;
             }
 
-            const ctx = document.getElementById('chart').getContext('2d');
-            chart = new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: labels,
-                    datasets: [
-                        {
-                            label: 'Distribución bajo H₀',
-                            data: h0Data,
-                            borderColor: 'rgb(59, 130, 246)',
-                            backgroundColor: 'rgba(59, 130, 246, 0.1)',
-                            borderWidth: 3,
-                            fill: false,
-                            tension: 0.4,
-                            pointRadius: 0
-                        },
-                        {
-                            label: 'Distribución bajo H₁',
-                            data: h1Data,
-                            borderColor: 'rgb(139, 92, 246)',
-                            backgroundColor: 'rgba(139, 92, 246, 0.1)',
-                            borderWidth: 3,
-                            fill: false,
-                            tension: 0.4,
-                            pointRadius: 0
-                        }
-                    ]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            display: true,
-                            position: 'top'
-                        },
-                        tooltip: {
-                            mode: 'index',
-                            intersect: false
-                        }
-                    },
-                    scales: {
-                        x: {
-                            display: true,
-                            title: {
-                                display: true,
-                                text: 'Media Muestral (x̄)',
-                                font: { size: 14, weight: 'bold' }
-                            },
-                            ticks: {
-                                maxTicksLimit: 10
-                            }
-                        },
-                        y: {
-                            display: true,
-                            title: {
-                                display: true,
-                                text: 'Densidad de Probabilidad',
-                                font: { size: 14, weight: 'bold' }
-                            },
-                            beginAtZero: true
-                        }
-                    },
-                    interaction: {
-                        mode: 'nearest',
-                        axis: 'x',
-                        intersect: false
-                    }
+            function mapY(y) {
+                return canvas.height - padding - (y / maxY) * chartHeight;
+            }
+
+            // Dibujar áreas sombreadas
+            const step = (rangeEnd - rangeStart) / 400;
+
+            // Área Error Tipo I (roja) - bajo H0 en región de rechazo
+            ctx.fillStyle = 'rgba(239, 68, 68, 0.6)';
+            ctx.beginPath();
+            if (testType === 'two-tailed') {
+                const criticalLower = 2 * mu0 - criticalValue;
+                // Cola derecha
+                ctx.moveTo(mapX(criticalValue), mapY(0));
+                for (let x = criticalValue; x <= rangeEnd; x += step) {
+                    ctx.lineTo(mapX(x), mapY(normalPDF(x, mu0, seM)));
                 }
-            });
+                ctx.lineTo(mapX(rangeEnd), mapY(0));
+                ctx.closePath();
+                ctx.fill();
+
+                // Cola izquierda
+                ctx.beginPath();
+                ctx.moveTo(mapX(rangeStart), mapY(0));
+                for (let x = rangeStart; x <= criticalLower; x += step) {
+                    ctx.lineTo(mapX(x), mapY(normalPDF(x, mu0, seM)));
+                }
+                ctx.lineTo(mapX(criticalLower), mapY(0));
+                ctx.closePath();
+                ctx.fill();
+            } else {
+                if (mu1 > mu0) {
+                    ctx.moveTo(mapX(criticalValue), mapY(0));
+                    for (let x = criticalValue; x <= rangeEnd; x += step) {
+                        ctx.lineTo(mapX(x), mapY(normalPDF(x, mu0, seM)));
+                    }
+                    ctx.lineTo(mapX(rangeEnd), mapY(0));
+                } else {
+                    ctx.moveTo(mapX(rangeStart), mapY(0));
+                    for (let x = rangeStart; x <= criticalValue; x += step) {
+                        ctx.lineTo(mapX(x), mapY(normalPDF(x, mu0, seM)));
+                    }
+                    ctx.lineTo(mapX(criticalValue), mapY(0));
+                }
+                ctx.closePath();
+                ctx.fill();
+            }
+
+            // Área Error Tipo II (naranja) - bajo H1 en región de no rechazo
+            ctx.fillStyle = 'rgba(249, 115, 22, 0.6)';
+            ctx.beginPath();
+            if (testType === 'two-tailed') {
+                const criticalLower = 2 * mu0 - criticalValue;
+                ctx.moveTo(mapX(criticalLower), mapY(0));
+                for (let x = criticalLower; x <= criticalValue; x += step) {
+                    ctx.lineTo(mapX(x), mapY(normalPDF(x, mu1, seM)));
+                }
+                ctx.lineTo(mapX(criticalValue), mapY(0));
+            } else {
+                if (mu1 > mu0) {
+                    ctx.moveTo(mapX(rangeStart), mapY(0));
+                    for (let x = rangeStart; x <= criticalValue; x += step) {
+                        ctx.lineTo(mapX(x), mapY(normalPDF(x, mu1, seM)));
+                    }
+                    ctx.lineTo(mapX(criticalValue), mapY(0));
+                } else {
+                    ctx.moveTo(mapX(criticalValue), mapY(0));
+                    for (let x = criticalValue; x <= rangeEnd; x += step) {
+                        ctx.lineTo(mapX(x), mapY(normalPDF(x, mu1, seM)));
+                    }
+                    ctx.lineTo(mapX(rangeEnd), mapY(0));
+                }
+            }
+            ctx.closePath();
+            ctx.fill();
+
+            // Área Potencia (verde) - bajo H1 en región de rechazo
+            ctx.fillStyle = 'rgba(16, 185, 129, 0.5)';
+            ctx.beginPath();
+            if (testType === 'two-tailed') {
+                const criticalLower = 2 * mu0 - criticalValue;
+                // Cola derecha
+                ctx.moveTo(mapX(criticalValue), mapY(0));
+                for (let x = criticalValue; x <= rangeEnd; x += step) {
+                    ctx.lineTo(mapX(x), mapY(normalPDF(x, mu1, seM)));
+                }
+                ctx.lineTo(mapX(rangeEnd), mapY(0));
+                ctx.closePath();
+                ctx.fill();
+
+                // Cola izquierda
+                ctx.beginPath();
+                ctx.moveTo(mapX(rangeStart), mapY(0));
+                for (let x = rangeStart; x <= criticalLower; x += step) {
+                    ctx.lineTo(mapX(x), mapY(normalPDF(x, mu1, seM)));
+                }
+                ctx.lineTo(mapX(criticalLower), mapY(0));
+            } else {
+                if (mu1 > mu0) {
+                    ctx.moveTo(mapX(criticalValue), mapY(0));
+                    for (let x = criticalValue; x <= rangeEnd; x += step) {
+                        ctx.lineTo(mapX(x), mapY(normalPDF(x, mu1, seM)));
+                    }
+                    ctx.lineTo(mapX(rangeEnd), mapY(0));
+                } else {
+                    ctx.moveTo(mapX(rangeStart), mapY(0));
+                    for (let x = rangeStart; x <= criticalValue; x += step) {
+                        ctx.lineTo(mapX(x), mapY(normalPDF(x, mu1, seM)));
+                    }
+                    ctx.lineTo(mapX(criticalValue), mapY(0));
+                }
+            }
+            ctx.closePath();
+            ctx.fill();
+
+            // Dibujar curvas
+            // Curva H0 (azul)
+            ctx.strokeStyle = '#3b82f6';
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            for (let x = rangeStart; x <= rangeEnd; x += step) {
+                const y = normalPDF(x, mu0, seM);
+                if (x === rangeStart) {
+                    ctx.moveTo(mapX(x), mapY(y));
+                } else {
+                    ctx.lineTo(mapX(x), mapY(y));
+                }
+            }
+            ctx.stroke();
+
+            // Curva H1 (púrpura)
+            ctx.strokeStyle = '#8b5cf6';
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            for (let x = rangeStart; x <= rangeEnd; x += step) {
+                const y = normalPDF(x, mu1, seM);
+                if (x === rangeStart) {
+                    ctx.moveTo(mapX(x), mapY(y));
+                } else {
+                    ctx.lineTo(mapX(x), mapY(y));
+                }
+            }
+            ctx.stroke();
+
+            // Dibujar líneas verticales de referencia
+            // μ0
+            ctx.strokeStyle = '#1e40af';
+            ctx.lineWidth = 2;
+            ctx.setLineDash([5, 5]);
+            ctx.beginPath();
+            ctx.moveTo(mapX(mu0), mapY(0));
+            ctx.lineTo(mapX(mu0), mapY(maxY));
+            ctx.stroke();
+
+            // μ1
+            ctx.strokeStyle = '#6b21a8';
+            ctx.beginPath();
+            ctx.moveTo(mapX(mu1), mapY(0));
+            ctx.lineTo(mapX(mu1), mapY(maxY));
+            ctx.stroke();
+
+            // Valor crítico
+            ctx.strokeStyle = '#dc2626';
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            ctx.moveTo(mapX(criticalValue), mapY(0));
+            ctx.lineTo(mapX(criticalValue), mapY(maxY));
+            ctx.stroke();
+
+            if (testType === 'two-tailed') {
+                const criticalLower = 2 * mu0 - criticalValue;
+                ctx.beginPath();
+                ctx.moveTo(mapX(criticalLower), mapY(0));
+                ctx.lineTo(mapX(criticalLower), mapY(maxY));
+                ctx.stroke();
+            }
+
+            ctx.setLineDash([]);
+
+            // Dibujar ejes
+            ctx.strokeStyle = '#000';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(padding, canvas.height - padding);
+            ctx.lineTo(canvas.width - padding, canvas.height - padding);
+            ctx.stroke();
+
+            ctx.beginPath();
+            ctx.moveTo(padding, padding);
+            ctx.lineTo(padding, canvas.height - padding);
+            ctx.stroke();
+
+            // Etiquetas
+            ctx.fillStyle = '#000';
+            ctx.font = 'bold 14px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText('Media Muestral (x̄)', canvas.width / 2, canvas.height - 10);
+
+            ctx.save();
+            ctx.translate(15, canvas.height / 2);
+            ctx.rotate(-Math.PI / 2);
+            ctx.fillText('Densidad de Probabilidad', 0, 0);
+            ctx.restore();
+
+            // Etiquetas de medias
+            ctx.font = 'bold 12px Arial';
+            ctx.fillStyle = '#1e40af';
+            ctx.fillText('μ₀=' + mu0.toFixed(1), mapX(mu0), padding - 10);
+
+            ctx.fillStyle = '#6b21a8';
+            ctx.fillText('μ₁=' + mu1.toFixed(1), mapX(mu1), padding - 30);
+
+            // Marcas en eje X
+            ctx.fillStyle = '#000';
+            ctx.font = '11px Arial';
+            const numTicks = 8;
+            for (let i = 0; i <= numTicks; i++) {
+                const x = rangeStart + (rangeEnd - rangeStart) * i / numTicks;
+                const px = mapX(x);
+                ctx.fillText(x.toFixed(1), px, canvas.height - padding + 20);
+                ctx.beginPath();
+                ctx.moveTo(px, canvas.height - padding);
+                ctx.lineTo(px, canvas.height - padding + 5);
+                ctx.stroke();
+            }
         }
 
         // Inicializar
-        updateParams();
+        window.addEventListener('load', updateParams);
+        window.addEventListener('resize', drawChart);
     </script>
 </body>
 </html>
