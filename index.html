@@ -522,10 +522,11 @@
                 <div><strong>H₁:</strong> μ = ${mu1.toFixed(1)}</div>
             `;
 
-            // Calcular estadísticas (solo bilateral, solo cola derecha)
-            const criticalValue = inverseNormalCDF(1 - alpha / 2) * seM + mu0;
+            // Calcular estadísticas (cola derecha únicamente)
+            // Para que α = β, el valor crítico debe estar en el punto medio
+            const criticalValue = inverseNormalCDF(1 - alpha) * seM + mu0;
 
-            // Beta solo considerando cola derecha (sin cola izquierda)
+            // Beta: área bajo H₁ desde inicio hasta valor crítico
             const beta = normalCDF(criticalValue, mu1, seM);
 
             const power = 1 - beta;
