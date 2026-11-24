@@ -1,0 +1,7 @@
+/* Correcciones de legibilidad (impeccable detect), 2026-11-24. Solo color y tamaño de letra.
+   Para deshacerlas: quitar el <link> a este fichero en el HTML. */
+#mu0Value { color: #4764e6 !important; }
+div.control-group > p.helper-text { color: #637186 !important; }
+div.controls > div.card > h2 > span.badge { color: #1c1c1c !important; }
+div.main-panel > div.card > h2 > span.badge { color: #1c1c1c !important; }
+p.subtitle { color: #657389 !important; }
